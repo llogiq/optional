@@ -11,11 +11,11 @@ pub enum OptionBool {
 	None,
 }
 
-pub struct Iter {
-	inner: OptionBool
+pub struct IterBool {
+	inner: OptionBool,
 }
 
-impl<'a> Iterator for &'a mut Iter {
+impl<'a> Iterator for IterBool {
 	type Item=bool;
 	
 	fn next(&mut self) -> Option<bool> {
@@ -61,6 +61,12 @@ impl PartialOrd for OptionBool {
 }
 
 impl OptionBool {
+	pub fn some(b: bool) -> Self {
+		if b { OptionBool::SomeTrue } else { OptionBool::SomeFalse }
+	}
+	
+	pub fn none() -> Self { OptionBool::None }
+	
 	pub fn is_some(&self) -> bool {
 		if let &OptionBool::None = self { false } else { true }
 	}
@@ -216,11 +222,9 @@ impl OptionBool {
 		}
 	}
 	
-	pub fn iter(&self) -> Iter {
-		Iter{ inner: *self } // makes a copy, it's cheap
+	pub fn iter(&self) -> IterBool {
+		IterBool{ inner: *self } // makes a copy, it's cheap
 	}
-	
-	//TODO: iter_mut
 	
 	pub fn take(&mut self) -> Option<bool> {
 		mem::replace(self, OptionBool::None).into()
@@ -271,13 +275,187 @@ impl From<Option<bool>> for OptionBool {
 	}
 }
 
+pub trait Noned: Sized {
+	fn is_none(&self) -> bool;
+	fn get_none() -> Self;
+}
+
+impl Noned for u8 { 
+	fn is_none(&self) -> bool { self == &std::u8::MAX } 
+	fn get_none() -> u8 { std::u8::MAX }
+}
+
+impl Noned for u16 { 
+	fn is_none(&self) -> bool { self == &std::u16::MAX } 
+	fn get_none() -> u16 { std::u16::MAX }
+}
+
+impl Noned for u32 { 
+	fn is_none(&self) -> bool { self == &std::u32::MAX } 
+	fn get_none() -> u32 { std::u32::MAX }
+}
+
+impl Noned for u64 { 
+	fn is_none(&self) -> bool { self == &std::u64::MAX } 
+	fn get_none() -> u64 { std::u64::MAX }
+}
+
+impl Noned for usize { 
+	fn is_none(&self) -> bool { self == &std::usize::MAX } 
+	fn get_none() -> usize { std::usize::MAX }
+}
+
+impl Noned for i8 { 
+	fn is_none(&self) -> bool { self == &std::i8::MIN } 
+	fn get_none() -> i8 { std::i8::MIN }
+}
+
+impl Noned for i16 { 
+	fn is_none(&self) -> bool { self == &std::i16::MIN } 
+	fn get_none() -> i16 { std::i16::MIN }
+}
+
+impl Noned for i32 { 
+	fn is_none(&self) -> bool { self == &std::i32::MIN } 
+	fn get_none() -> i32 { std::i32::MIN }
+}
+
+impl Noned for i64 { 
+	fn is_none(&self) -> bool { self == &std::i64::MIN } 
+	fn get_none() -> i64 { std::i64::MIN }
+}
+
+impl Noned for isize { 
+	fn is_none(&self) -> bool { self == &std::isize::MIN } 
+	fn get_none() -> isize { std::isize::MIN }
+}
+
+impl Noned for f32 {
+	fn is_none(&self) -> bool { self.is_nan() }
+	fn get_none() -> f32 { std::f32::NAN }
+}
+
+impl Noned for f64 {
+	fn is_none(&self) -> bool { self.is_nan() }
+	fn get_none() -> f64 { std::f64::NAN }
+}
+
+#[derive(Copy, Clone)]
+pub struct Optioned<T: Noned + Sized + Copy> { value: T }
+
+impl<T> PartialEq for Optioned<T> where T: PartialEq + Noned + Sized + Copy {
+	fn eq(&self, other: &Self) -> bool {
+		&self.value == &other.value
+	}
+}
+
+impl<T> Eq for Optioned<T> where T: PartialEq + Noned + Sized + Copy + Eq {}
+
+impl<T: Noned + Sized + Copy> Optioned<T> {
+	pub fn some(t: T) -> Self {
+		debug_assert!(!t.is_none());
+		Optioned{ value: t }
+	}
+	
+	pub fn none() -> Self {
+		Optioned{ value: <T as Noned>::get_none() }
+	}
+	
+	fn as_option(&self) -> Option<T> {
+		if self.value.is_none() { None } else { Some(self.value) }
+	}
+	
+	pub fn is_none(&self) -> bool {
+		self.value.is_none()
+	}
+	
+	pub fn is_some(&self) -> bool {
+		!self.value.is_none()
+	}
+	
+	pub fn expect(&self, msg: &str) -> T {
+		if self.is_none() { panic!("{}", msg) }
+		self.value
+	}
+	
+	pub fn unwrap(&self) -> T {
+		self.expect("unwrap called on None")
+	}
+	
+	pub fn unwrap_or(&self, def: T) -> T {
+		if self.is_none() { def } else { self.value }
+	}
+	
+	pub fn unwrap_or_else<F>(self, f: F) -> T where F: FnOnce() -> T {
+		if self.is_none() { f() } else { self.value }
+	}
+	
+	pub fn map<U, F>(self, f: F) -> Option<U>
+	where F: FnOnce(T) -> U {
+		if self.is_none() { None } else { Some(f(self.value)) }
+	}
+	
+	pub fn map_t<U, F>(self, f: F) -> Self
+	where F: FnOnce(T) -> T {
+		if self.is_none() { self } else { Self::some(f(self.value)) }
+	}
+	
+	pub fn map_or<U, F>(self, default: U, f: F) -> U where F: FnOnce(T) -> U {
+		if self.is_none() { default } else { f(self.value) }
+	}
+	
+	pub fn map_or_else<U, D, F>(self, default: D, f: F) -> U 
+	where D: FnOnce() -> U, F: FnOnce(T) -> U {
+		if self.is_none() { default() } else { f(self.value) }
+	}
+	
+	pub fn take(&mut self) -> Option<T> {
+		mem::replace(self, Self::none()).as_option()
+	}
+	
+	pub fn iter(&self) -> Optioned<T> {
+		*self // make a copy
+	}
+}
+
+impl<T: Noned + Sized + Copy> Iterator for Optioned<T> {
+	type Item=T;
+	
+	fn next(&mut self) -> Option<T> {
+		self.take()
+	}
+}
+
+impl<T: Noned + Sized + Copy> Into<Option<T>> for Optioned<T> {
+	fn into(self) -> Option<T> { self.as_option() }
+}
+
+impl<'a, T: Noned + Sized + Copy> From<&'a Option<T>> for Optioned<T> {
+	fn from(o: &Option<T>) -> Optioned<T> {
+		o.map_or_else(Self::none, Self::some)
+	}
+}
+
+impl<T: Noned + Sized + Copy> From<Option<T>> for Optioned<T> {
+	fn from(o: Option<T>) -> Optioned<T> {
+		o.map_or_else(Self::none, Self::some)
+	}
+}
+
 #[test]
 fn it_works() {
-	let optionals = [ OptionBool::SomeTrue, OptionBool::SomeFalse, OptionBool::None ];
+	let optionals = [ 
+		OptionBool::some(true), OptionBool::some(false), OptionBool::none() ];
 	
 	for o in optionals.iter() {
 		let opt : Option<bool> = o.into();
 		let o2 : OptionBool = opt.into();
-		assert!(o == o2)
+		assert!(o == o2);
 	}
+	
+	let opt_u32 : Optioned<u32> = Optioned::some(32);
+	assert!(opt_u32.is_some());
+	
+	let opt_u32_none : Optioned<u32> = Optioned::none();
+	assert!(opt_u32_none.is_none());
 }
