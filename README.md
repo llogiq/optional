@@ -21,6 +21,14 @@ is `NAN`.
 This crate is experimental, has no docs and almost no tests. Honestly, I mainly
 publish it now to embarrass myself.
 
+# Documentation
+
+[API documentation](https://llogiq.github.io/optional/doc/optional/index.html)
+(I need to work on this)
+
+You also may want to have a look at the infinitely better documented
+[Option docs](http://doc.rust-lang.org/std/option/enum.Option.html)
+
 # License
 
 This project is under MIT license (see LICENSE)
