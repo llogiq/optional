@@ -468,7 +468,7 @@ impl<T: Noned + Sized + Copy> Into<Option<T>> for Optioned<T> {
 }
 
 #[test]
-fn it_works() {
+fn into_option_bool() {
 	let optionals = [ 
 		OptionBool::some(true), OptionBool::some(false), OptionBool::none() ];
 	
@@ -477,7 +477,31 @@ fn it_works() {
 		let o2 : OptionBool = opt.into();
 		assert!(o == o2);
 	}
+}
+
+#[test]
+fn test_bool_map() {
+	let optionals = [ 
+		OptionBool::some(true), OptionBool::some(false), OptionBool::none() ];
 	
+	for o in optionals.iter() {
+		assert!(o == o.map_bool(|b| b));
+		let opt : Option<bool> = **o; // double deref for &
+		assert!(opt == o.map(|b| b));
+	}
+	
+	assert!(OptionBool::SomeTrue == OptionBool::SomeFalse.map_bool(|b| !b))
+}
+
+#[test]
+fn deref_to_option() {
+	assert!(*OptionBool::some(true) == Some(true));
+	assert!(*OptionBool::some(false) == Some(false));
+	assert!(*OptionBool::none() == None);
+}
+
+#[test]
+fn optioned_is_some_or_none() {
 	let opt_u32 : Optioned<u32> = Optioned::some(32);
 	assert!(opt_u32.is_some());
 	
