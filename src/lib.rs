@@ -2,13 +2,34 @@ use std::cmp::Ordering;
 use std::convert::From;
 use std::iter::Iterator;
 use std::mem;
+use std::ops::Deref;
 use std::fmt::{self, Debug, Error};
+
+const OB_SOME_TRUE : Option<bool> = Some(true);
+const OB_SOME_FALSE : Option<bool> = Some(false);
+const OB_NONE : Option<bool> = None;
+
+const OB_SOME_TRUE_REF : &'static Option<bool> = &OB_SOME_TRUE;
+const OB_SOME_FALSE_REF : &'static Option<bool> = &OB_SOME_FALSE;
+const OB_NONE_REF : &'static Option<bool> = &OB_NONE;
 
 #[derive(Copy, Clone, Eq, Ord, Hash)]
 pub enum OptionBool {
 	SomeTrue,
 	SomeFalse,
 	None,
+}
+
+impl Deref for OptionBool {
+	type Target = Option<bool>;
+	
+	fn deref(&self) -> &'static Option<bool> {
+		match self {
+			&OptionBool::SomeTrue => OB_SOME_TRUE_REF,
+			&OptionBool::SomeFalse => OB_SOME_FALSE_REF,
+			&OptionBool::None => OB_NONE_REF,
+		}
+	}
 }
 
 pub struct IterBool {
@@ -426,9 +447,9 @@ impl<T: Noned + Sized + Copy> Iterator for Optioned<T> {
 	}
 }
 
-impl<T: Noned + Sized + Copy> Into<Option<T>> for Optioned<T> {
-	fn into(self) -> Option<T> { self.as_option() }
-}
+//impl<T: Noned + Sized + Copy> Into<Option<T>> for Optioned<T> {
+//	fn into(self) -> Option<T> { self.as_option() }
+//}
 
 impl<'a, T: Noned + Sized + Copy> From<&'a Option<T>> for Optioned<T> {
 	fn from(o: &Option<T>) -> Optioned<T> {
@@ -440,6 +461,10 @@ impl<T: Noned + Sized + Copy> From<Option<T>> for Optioned<T> {
 	fn from(o: Option<T>) -> Optioned<T> {
 		o.map_or_else(Self::none, Self::some)
 	}
+}
+
+impl<T: Noned + Sized + Copy> Into<Option<T>> for Optioned<T> {
+	fn into(self) -> Option<T> { self.as_option() }
 }
 
 #[test]
