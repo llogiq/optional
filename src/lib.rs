@@ -38,8 +38,6 @@
 //!
 //! Using Optioned for your own types is as simple as implementing `Noned` for
 //! your type, provided that your type is already Copy and Sized.
-#![feature(test)]
-
 use std::cmp::Ordering;
 use std::convert::From;
 use std::iter::Iterator;
@@ -47,8 +45,6 @@ use std::mem;
 use std::ops::Deref;
 use std::fmt::{self, Debug, Error};
 use self::OptionBool::*;
-extern crate test;
-use test::Bencher;
 
 /// The `OptionBool` type, a space-efficient Option<bool> replacement
 #[derive(Copy, Clone, Eq, Ord, Hash)]
@@ -478,7 +474,7 @@ impl<T: Noned + Sized + Copy> Optioned<T> {
 	/// Optioned::<i32>::some(1); // Optioned(1)
 	/// ```
 	///
-	/// ```{.should_panic}
+	/// ```should_panic
 	///# use ::optional::Optioned;
 	/// Optioned::<f64>::some(std::f64::NAN); // panic!s
 	/// ```
@@ -624,28 +620,3 @@ fn optioned_is_some_or_none() {
 	let opt_u32_none : Optioned<u32> = Optioned::none();
 	assert!(opt_u32_none.is_none());
 }
-
-#[bench]
-fn bench_is_some_optbool(bench: &mut test::Bencher) {	
-	fn is_some_optbool() {
-		for o in [OptionBool::SomeTrue, OptionBool::SomeFalse, OptionBool::None]
-				.iter().cycle().take(1200) {
-			test::black_box(o.is_some());
-		}
-	}
-
-	bench.iter(is_some_optbool);
-}
-
-#[bench]
-fn bench_is_some_stdopt(bench: &mut test::Bencher) {
-	fn is_some_stdopt() {
-		for o in [Option::Some(true), Option::Some(false), Option::None]
-				.iter().cycle().take(1200) {
-			test::black_box(o.is_some());
-		}
-	}
-
-	bench.iter(is_some_stdopt);
-}
-
