@@ -12,3 +12,6 @@ documentation = "https://llogiq.github.io/optional/doc/optional/index.html"
 [lib]
 name = "optional"
 path = "src/lib.rs"
+
+[features]
+unstable = []
