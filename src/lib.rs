@@ -83,8 +83,7 @@ impl Deref for OptionBool {
 	}
 }
 
-/// The IterBool basically copies the OptionBool and on next swaps it out with
-/// None
+/// The IterBool iterates over the zero or one values of an OptionBool
 pub struct IterBool {
 	inner: OptionBool,
 }
@@ -146,17 +145,17 @@ impl OptionBool {
 		if b { SomeTrue } else { SomeFalse }
 	}
 	
-	/// Create a None value
+	/// Create a None value.
 	///
 	/// # Examples
 	///
 	/// ```
-	/// assert!(optional::OptionBool::none() == optional::OptionBool::None);
+	/// assert_eq!(optional::OptionBool::none(), optional::OptionBool::None);
 	/// ```
 	#[inline]
 	pub fn none() -> Self { None }
 	
-	/// Returns true if the option is a Some value
+	/// Returns true if the option is a Some value.
 	///
 	/// # Examples
 	///
@@ -170,7 +169,7 @@ impl OptionBool {
 		if let &None = self { false } else { true }
 	}
 	
-	/// Returns true if the option is a Some value
+	/// Returns true if the option is a Some value.
 	///
 	/// # Examples
 	/// 
@@ -184,7 +183,27 @@ impl OptionBool {
 		if let &None = self { true } else { false }
 	}
 	
-	
+	/// Unwraps the contained bool, panics on None with given message.
+	///
+	/// # Panics
+	///
+	/// if self is None
+	///
+	/// # Examples
+	/// 
+	/// For SomeTrue/SomeFalse, the corresponding bool is returned.
+	///
+	/// ```
+	/// assert!(optional::OptionBool::SomeTrue.expect("FAIL"));
+	/// assert!(!optional::OptionBool::SomeFalse.expect("FAIL"));
+	/// ```
+	/// 
+	/// On None, it panics with the given message.
+	///
+	/// ```should_panic
+	/// optional::OptionBool::None.expect("FAIL"); // panics with FAIL
+	/// ```
+	#[inline]
 	pub fn expect(&self, msg: &str) -> bool {
 		match self {
 			&SomeTrue => true,
@@ -193,11 +212,43 @@ impl OptionBool {
 		}
 	}
 	
+	/// Unwraps the contained bool, panics on None.
+	///
+	/// # Panics
+	///
+	/// if self is None
+	///
+	/// # Examples
+	/// 
+	/// For SomeTrue/SomeFalse, the corresponding bool is returned.
+	///
+	/// ```
+	/// assert!(optional::OptionBool::SomeTrue.unwrap());
+	/// assert!(!optional::OptionBool::SomeFalse.unwrap());
+	/// ```
+	/// 
+	/// On None, it panics with "unwrap called on None"
+	///
+	/// ```should_panic
+	///# use optional::OptionBool;
+	/// OptionBool::None.unwrap(); // panics
+	/// ```
 	#[inline]
 	pub fn unwrap(&self) -> bool {
 		self.expect("unwrap called on None")
 	}
 	
+	/// Returns the contained bool or a default.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    ///# use optional::OptionBool;
+    /// assert!(OptionBool::SomeTrue.unwrap_or(false));
+    /// assert!(!OptionBool::SomeFalse.unwrap_or(true));
+    /// assert!(OptionBool::None.unwrap_or(true));
+    /// assert!(!OptionBool::None.unwrap_or(false));
+    /// ```
 	#[inline]
 	pub fn unwrap_or(&self, def: bool) -> bool {
 		match self {
@@ -207,6 +258,17 @@ impl OptionBool {
 		}
 	}
 	
+	
+	/// Returns the contained bool or a computed default.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    ///# use optional::OptionBool;
+    /// assert!(OptionBool::SomeTrue.unwrap_or_else(|| false));
+    /// assert!(!OptionBool::SomeFalse.unwrap_or_else(|| panic!()));
+    /// assert!(OptionBool::None.unwrap_or_else(|| true));
+    /// ```
 	#[inline]
 	pub fn unwrap_or_else<F>(self, f: F) -> bool where F: FnOnce() -> bool {
 		match self {
@@ -216,6 +278,18 @@ impl OptionBool {
 		}
 	}
 	
+	/// Maps an OptionBool to an Option<U> by applying the function over the
+	/// contained bool.
+	///
+	/// # Examples
+	///
+	/// Convert the contained bool to a Yes/No message
+	///
+	/// ```
+	///# use optional::OptionBool;
+	/// assert_eq!(Some("Yes"), OptionBool::SomeTrue.map(
+	///     |b| if b { "Yes" } else { "No" }));
+	/// ```
 	#[inline]
 	pub fn map<U, F>(self, f: F) -> Option<U> 
 	where F: FnOnce(bool) -> U {
@@ -226,6 +300,18 @@ impl OptionBool {
 		}
 	}
 	
+	/// Maps an OptionBool to another OptionBool by applying the function over
+	/// the contained bool.
+	///
+	/// # Examples
+	///
+	/// Invert the contained bool
+	///
+	/// ```
+	///# use optional::OptionBool;
+	/// assert_eq!(OptionBool::SomeTrue, 
+	///     OptionBool::SomeFalse.map_bool(|b| !b));
+	/// ```
 	#[inline]
 	pub fn map_bool<F>(self, f: F) -> OptionBool
 	where F: FnOnce(bool) -> bool {
@@ -238,6 +324,17 @@ impl OptionBool {
 		}
 	}
 	
+	/// Maps a value to a U by applying the function or return a default U.
+	///
+	/// # Examples
+	///
+	/// Map to a string (as per the daily wtf's boolean definition):
+	///
+	/// ```
+	///# use optional::OptionBool;
+	/// assert_eq!("True", OptionBool::SomeTrue.map_or("FileNotFound", 
+	///     |b| if b { "True" } else { "False" }));
+	/// ```
 	#[inline]
 	pub fn map_or<U, F>(self, default: U, f: F) -> U 
 	where F: FnOnce(bool) -> U {
@@ -516,7 +613,7 @@ impl Noned for f64 {
 
 /// An Option<T>-like structure that takes only as much space as the enclosed
 /// value, at the cost of removing one particular None value from the value 
-/// domain
+/// domain (see Noned)
 #[derive(Copy, Clone)]
 pub struct Optioned<T: Noned + Sized + Copy> { value: T }
 
