@@ -62,7 +62,7 @@ their `MAX` and for floats is `NAN`.
 
 # Documentation
 
-[API documentation](https://llogiq.github.io/optional/doc/optional/index.html)
+[API documentation](http://llogiq.github.io/optional)
 (It's already quite good for `OptionBool`, I need to work on `Optioned`)
 
 You also may want to have a look at the somewhat better documented
