@@ -8,16 +8,12 @@ before_script:
 - pip install 'travis-cargo<0.2' --user && export PATH=$HOME/.local/bin:$PATH
 script:
 - |
-  travis-cargo build --features "${FEATURES}" &&
-  travis-cargo test --features "${FEATURES}" &&
-  travis-cargo bench --features "${FEATURES}" &&
+  travis-cargo build &&
+  travis-cargo test &&
+  travis-cargo bench &&
   travis-cargo doc
 after_success:
 - travis-cargo --only beta doc-upload
 env:
-  matrix:
-    - FEATURES=""
-    - FEATURES=""
-    - FEATURES="unstable"
   global:
     secure: aLeGDEZ1yrWBTFyfNQYgTC/YVmBnnGW23e7Dt4fugAQayFEJ9CnTQR789tATkzt+cFWrHUIOf0uAzMqplKI4JWukjhAH4Mfxscrd9OzK6sZLx2cRxNYasp3oPZPzT5Dx+67LpprXQPGv5yy8OycwakWqX2NOUNh8bz1b5FU3h8kCEFobbaYQ/GQPaSjrRFq1b0ecpsIVTpfXtnKQM+cjI9AzH60Q21zH0tCBwybPnok09KLyk6iiK56ppU/BoeBxt89/yl8baEDiB0ryNK/JoRSiruViF4Nrs/ns2DG7VFBGXeluz83idfKrcHBfxWJAiano/jdw6e3WUNZYPnsa6U9BVkH3P0jUac2JlhMTemVj4PdOqoyUt2E083028GsQ9l9mkKbPu6kTp9K4INMKDLvgXHlzrXI4egdHNsStKcon10RLvRt+nWcqE2Eh6mZJdBGeWVPgJQKRHuPMzaoR+HgCbLy5hfvx0yCoUUh/a/JH0+WE0xXGq2XgAPd1ZCLarDkyLqc3NJsJ0Itzm/hk9Yf1LdMVGtvCMswjvvSLgYTaMlENHb4nALJWjo/y0b9NFFpi5rJV051n7v+zdWjt0AdLTNEZQA37waaLgknoCYWjerjjZ8IQAIo4s9FhWUYxGOpeIoe//C96Ha5aSiAGvgLuxMix20p+kwZvMTZ3V3o=

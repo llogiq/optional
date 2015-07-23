@@ -1,3 +1,4 @@
+#![cfg(unstable)]
 #![feature(test)]
 
 extern crate test;
