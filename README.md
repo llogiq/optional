@@ -11,22 +11,61 @@ additional methods where `Option<bool>` would recieve or return another
 `Option<bool>`, a `_bool` prefix is used to receive/return `OptionBool` 
 instead.
 
-Then there is a struct `Optioned<T>` that is similar to Option but needs no 
-additional storage, declaring a None value instead. Their are impls For 
-`i8..64`, `u8..64`, `isize`, `usize`, `f32` and `f64`, and it's easy enough to 
-Implement it for your own type (have a look at the Noned trait). The None value 
-for the int types is their `MIN`, for the unsigned types is their `MAX` and for 
-floats is `NAN`.
+Not only does `OptionBool` improve space efficiency as opposed to 
+`Option<bool>`, most methods also perform a little faster in my benchmarks. On 
+nightly, On an Intel(R) Core(TM)2 Quad CPU Q8400 @ 
+2.66GHz running LUbuntu 15.04 with a 3.19.0-23-generic kernel and Rust 
+1.3.0-nightly as of 2015-07-13, I get the following results:
 
-This crate is experimental, has almost no docs or tests. Honestly, I mainly
-publish it now to embarrass myself.
+```
+test bench_and_bool_opt        ... bench:       2,370 ns/iter (+/- 188)
+test bench_and_opt             ... bench:       2,553 ns/iter (+/- 96)
+test bench_and_std             ... bench:       2,423 ns/iter (+/- 2)
+test bench_as_slice_iter_opt   ... bench:       2,701 ns/iter (+/- 4)
+test bench_as_slice_opt        ... bench:       2,711 ns/iter (+/- 5)
+test bench_as_slice_std        ... bench:       2,883 ns/iter (+/- 3)
+test bench_from_opt            ... bench:       3,002 ns/iter (+/- 14)
+test bench_is_some_opt         ... bench:       2,510 ns/iter (+/- 4)
+test bench_is_some_std         ... bench:       2,252 ns/iter (+/- 3)
+test bench_iter_opt            ... bench:       2,701 ns/iter (+/- 4)
+test bench_iter_std            ... bench:       2,880 ns/iter (+/- 3)
+test bench_map_invert_opt      ... bench:       4,211 ns/iter (+/- 6)
+test bench_map_invert_opt_bool ... bench:       3,157 ns/iter (+/- 10)
+test bench_map_invert_std      ... bench:       4,513 ns/iter (+/- 13)
+test bench_map_or_else_opt     ... bench:       2,552 ns/iter (+/- 3)
+test bench_map_or_else_std     ... bench:       3,452 ns/iter (+/- 16)
+test bench_map_or_opt          ... bench:       2,776 ns/iter (+/- 4)
+test bench_map_or_std          ... bench:       2,714 ns/iter (+/- 4)
+test bench_or_bool_opt         ... bench:       2,152 ns/iter (+/- 146)
+test bench_or_else_bool_opt    ... bench:       2,627 ns/iter (+/- 101)
+test bench_or_else_opt         ... bench:       2,422 ns/iter (+/- 3)
+test bench_or_else_std         ... bench:       2,893 ns/iter (+/- 29)
+test bench_or_opt              ... bench:       3,200 ns/iter (+/- 4)
+test bench_or_std              ... bench:       2,537 ns/iter (+/- 10)
+test bench_to_opt              ... bench:       2,859 ns/iter (+/- 3)
+test bench_unwrap_opt          ... bench:       2,706 ns/iter (+/- 3)
+test bench_unwrap_or_else_opt  ... bench:       2,776 ns/iter (+/- 4)
+test bench_unwrap_or_else_std  ... bench:       3,240 ns/iter (+/- 3)
+test bench_unwrap_or_opt       ... bench:       2,555 ns/iter (+/- 2)
+test bench_unwrap_or_std       ... bench:       3,206 ns/iter (+/- 31)
+test bench_unwrap_std          ... bench:       3,153 ns/iter (+/- 3)
+```
+
+Apart from `OptionBool`, there is a struct `Optioned<T>` that is similar to 
+Option but needs no additional storage, declaring a None value instead. Their 
+are impls For `i8..64`, `u8..64`, `isize`, `usize`, `f32` and `f64`, and it's 
+easy enough to Implement it for your own type (have a look at the Noned trait). 
+The None value for the int types is their `MIN`, for the unsigned types is 
+their `MAX` and for floats is `NAN`.
+
+
 
 # Documentation
 
 [API documentation](https://llogiq.github.io/optional/doc/optional/index.html)
-(I need to work on this)
+(It's already quite good for `OptionBool`, I need to work on `Optioned`)
 
-You also may want to have a look at the infinitely better documented
+You also may want to have a look at the somewhat better documented
 [Option docs](http://doc.rust-lang.org/std/option/enum.Option.html)
 
 # License
