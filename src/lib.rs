@@ -38,6 +38,8 @@
 //!
 //! Using Optioned for your own types is as simple as implementing `Noned` for
 //! your type, provided that your type is already Copy and Sized.
+
+use std::slice::Iter;
 use std::cmp::Ordering;
 use std::convert::From;
 use std::iter::Iterator;
@@ -83,20 +85,6 @@ impl Deref for OptionBool {
 	}
 }
 
-/// The IterBool iterates over the zero or one values of an OptionBool
-pub struct IterBool {
-	inner: OptionBool,
-}
-
-impl<'a> Iterator for IterBool {
-	type Item=bool;
-	
-	#[inline]
-	fn next(&mut self) -> Option<bool> {
-		self.inner.take()
-	}
-}
-
 impl PartialEq for OptionBool {
 	#[inline]
 	fn eq(&self, other: &OptionBool) -> bool {
@@ -137,6 +125,14 @@ impl PartialOrd for OptionBool {
 		}
 	}
 }
+
+const OB_TRUE_SLICE : [bool; 1] = [true];
+const OB_FALSE_SLICE : [bool; 1] = [false];
+const OB_EMPTY_SLICE : [bool; 0] = [];
+
+const OB_TRUE_SLICE_REF : &'static [bool] = &OB_TRUE_SLICE;
+const OB_FALSE_SLICE_REF : &'static [bool] = &OB_FALSE_SLICE;
+const OB_EMPTY_SLICE_REF : &'static [bool] = &OB_EMPTY_SLICE;
 
 impl OptionBool {
 	/// Create a SomeTrue for true, SomeFalse for false
@@ -345,6 +341,16 @@ impl OptionBool {
 		}
 	}
 	
+	/// Maps a value to a U by applying the function or return a computed 
+	/// default.
+	///
+	/// # Examples
+	///
+	/// ```
+	///# use optional::OptionBool;
+	/// assert_eq!("True", OptionBool::SomeTrue.map_or_else(|| "FileNotFound", 
+	///     |b| if b { "True" } else { "False" }));
+	/// ```
 	#[inline]
 	pub fn map_or_else<U, D, F>(self, default: D, f: F) -> U 
 	where D: FnOnce() -> U, F: FnOnce(bool) -> U {
@@ -374,6 +380,17 @@ impl OptionBool {
 		}
 	}
 	
+	/// Returns `None` if the option is `None`, otherwise returns `optb`.
+	///
+	/// # Examples
+	///
+	/// ```
+	///# use optional::OptionBool;
+	/// assert_eq!(Some(1), OptionBool::SomeTrue.and(Some(1)));
+	/// assert_eq!(None, OptionBool::None.and(Some(1)));
+	/// let actual : Option<u8> = None;
+	/// assert_eq!(None, OptionBool::SomeTrue.and(actual));
+	/// ```
 	#[inline]
 	pub fn and<U>(self, optb: Option<U>) -> Option<U> {
 		match self {
@@ -382,11 +399,24 @@ impl OptionBool {
 		}
 	}
 	
+	/// Returns `None` if the option is `None`, otherwise returns `optb`.
+	///
+	/// # Examples
+	///
+	/// ```
+	///# use optional::OptionBool;
+	/// assert_eq!(OptionBool::SomeTrue,
+	///     OptionBool::SomeFalse.and_bool(OptionBool::SomeTrue));
+	/// assert_eq!(OptionBool::None,
+	///     OptionBool::None.and_bool(OptionBool::SomeFalse));
+	/// assert_eq!(OptionBool::None,
+	///     OptionBool::SomeTrue.and_bool(OptionBool::None));
+	/// ```
 	#[inline]
 	pub fn and_bool(self, optb: OptionBool) -> OptionBool {
 		match self {
-			SomeTrue | SomeFalse => optb,
 			None => None,
+			_ => optb,
 		}
 	}
 	
@@ -410,6 +440,17 @@ impl OptionBool {
 		}
 	}
 	
+	/// Returns this as Option unless this is `None`, in which case returns
+	/// `optb`.
+	///
+	/// # Examples
+	///
+	/// ```
+	///# use optional::OptionBool;
+	/// assert_eq!(Some(false), OptionBool::SomeFalse.or(Some(true)));
+	/// assert_eq!(Some(true), OptionBool::None.or(Some(true)));
+	/// assert_eq!(None, OptionBool::None.or(None));
+	/// ```
 	#[inline]
 	pub fn or(self, optb: Option<bool>) -> Option<bool> {
 		match self {
@@ -419,6 +460,20 @@ impl OptionBool {
 		}
 	}
 	
+	/// Returns this as Option unless this is `None`, in which case returns
+	/// `optb`.
+	///
+	/// # Examples
+	///
+	/// ```
+	///# use optional::OptionBool;
+	/// assert_eq!(OptionBool::SomeFalse, 
+	///     OptionBool::SomeFalse.or_bool(OptionBool::SomeTrue));
+	/// assert_eq!(OptionBool::SomeTrue, 
+	///     OptionBool::None.or_bool(OptionBool::SomeTrue));
+	/// assert_eq!(OptionBool::None, 
+	///     OptionBool::None.or_bool(OptionBool::None));
+	/// ```
 	#[inline]
 	pub fn or_bool(self, optb: OptionBool) -> OptionBool {
 		match self {
@@ -427,6 +482,17 @@ impl OptionBool {
 		}
 	}
 	
+	/// Returns this as Option unless this is `None`, in which case use the
+	/// supplied function to calculate the result.
+	///
+	/// # Examples
+	///
+	/// ```
+	///# use optional::OptionBool;
+	/// assert_eq!(Some(false), OptionBool::SomeFalse.or_else(|| Some(true)));
+	/// assert_eq!(Some(true), OptionBool::None.or_else(|| Some(true)));
+	/// assert_eq!(None, OptionBool::None.or_else(|| None));
+	/// ```
 	#[inline]
 	pub fn or_else<F>(self, f: F) -> Option<bool> 
 	where F: FnOnce() -> Option<bool> {
@@ -437,6 +503,20 @@ impl OptionBool {
 		}
 	}
 	
+	/// Returns this as Option unless this is `None`, in which case use the
+	/// supplied function to calculate the result.
+	///
+	/// # Examples
+	///
+	/// ```
+	///# use optional::OptionBool;
+	/// assert_eq!(OptionBool::SomeFalse, 
+	///     OptionBool::SomeFalse.or_else_bool(|| OptionBool::SomeTrue));
+	/// assert_eq!(OptionBool::SomeTrue, 
+	///     OptionBool::None.or_else_bool(|| OptionBool::SomeTrue));
+	/// assert_eq!(OptionBool::None, 
+	///     OptionBool::None.or_else_bool(|| OptionBool::None));
+	/// ```
 	#[inline]
 	pub fn or_else_bool<F>(self, f: F) -> OptionBool
 	where F: FnOnce() -> OptionBool {
@@ -447,13 +527,36 @@ impl OptionBool {
 	}
 	
 	#[inline]
-	pub fn iter(&self) -> IterBool {
-		IterBool{ inner: *self } // makes a copy, it's cheap
+	pub fn iter(&self) -> Iter<bool> {
+		self.as_slice().iter()
+	}
+	
+	/// return a possibly empty slice with the contained value, if any.
+	///
+	/// # Examples
+	///
+	/// ```
+	///# use optional::OptionBool;
+	/// assert_eq!(&[true], OptionBool::SomeTrue.as_slice());
+	/// assert!(OptionBool::None.as_slice().is_empty());
+	/// ```
+	#[inline]
+	pub fn as_slice(self) -> &'static [bool] {
+		match self {
+			SomeTrue => OB_TRUE_SLICE_REF,
+			SomeFalse => OB_FALSE_SLICE_REF,
+			None => OB_EMPTY_SLICE_REF,
+		}
 	}
 	
 	#[inline]
 	pub fn take(&mut self) -> Option<bool> {
-		mem::replace(self, None).into()
+		self.take_bool().into()
+	}
+	
+	#[inline]
+	pub fn take_bool(&mut self) -> OptionBool {
+		mem::replace(self, None)
 	}
 }
 
@@ -501,6 +604,17 @@ impl From<Option<bool>> for OptionBool {
 			Option::Some(true) => SomeTrue,
 			Option::Some(false) => SomeFalse,
 			Option::None => None,
+		}
+	}
+}
+
+impl<'a> From<&'a Option<bool>> for OptionBool {
+	#[inline]
+	fn from(o: &'a Option<bool>) -> Self {
+		match o {
+			&Option::Some(true) => SomeTrue,
+			&Option::Some(false) => SomeFalse,
+			&Option::None => None,
 		}
 	}
 }
@@ -779,7 +893,8 @@ fn into_option_bool() {
 
 #[test]
 fn test_bool_map() {
-	let optionals = [ OptionBool::some(true), OptionBool::some(false), OptionBool::none() ];
+	let optionals =
+		[ OptionBool::SomeTrue, OptionBool::SomeFalse, OptionBool::None ];
 	
 	for o in optionals.iter() {
 		assert!(o == o.map_bool(|b| b));
