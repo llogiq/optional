@@ -146,7 +146,8 @@ impl OptionBool {
 	/// # Examples
 	///
 	/// ```
-	/// assert_eq!(optional::OptionBool::none(), optional::OptionBool::None);
+	///# use optional::OptionBool;
+	/// assert_eq!(OptionBool::none(), optional::OptionBool::None);
 	/// ```
 	#[inline]
 	pub fn none() -> Self { None }
@@ -156,9 +157,10 @@ impl OptionBool {
 	/// # Examples
 	///
 	/// ```
-	/// assert!(optional::OptionBool::SomeTrue.is_some());
-	/// assert!(optional::OptionBool::SomeFalse.is_some());
-	/// assert!(!optional::OptionBool::None.is_some());
+	///# use optional::OptionBool;
+	/// assert!(OptionBool::SomeTrue.is_some());
+	/// assert!(OptionBool::SomeFalse.is_some());
+	/// assert!(!OptionBool::None.is_some());
 	/// ```
 	#[inline]
 	pub fn is_some(&self) -> bool {
@@ -170,9 +172,10 @@ impl OptionBool {
 	/// # Examples
 	/// 
 	/// ```
-	/// assert!(!optional::OptionBool::SomeTrue.is_none());
-	/// assert!(!optional::OptionBool::SomeFalse.is_none());
-	/// assert!(optional::OptionBool::None.is_none());
+	///# use optional::OptionBool;
+	/// assert!(!OptionBool::SomeTrue.is_none());
+	/// assert!(!OptionBool::SomeFalse.is_none());
+	/// assert!(OptionBool::None.is_none());
 	/// ```
 	#[inline]
 	pub fn is_none(&self) -> bool {
@@ -190,14 +193,16 @@ impl OptionBool {
 	/// For SomeTrue/SomeFalse, the corresponding bool is returned.
 	///
 	/// ```
-	/// assert!(optional::OptionBool::SomeTrue.expect("FAIL"));
-	/// assert!(!optional::OptionBool::SomeFalse.expect("FAIL"));
+	///# use optional::OptionBool;
+	/// assert!(OptionBool::SomeTrue.expect("FAIL"));
+	/// assert!(!OptionBool::SomeFalse.expect("FAIL"));
 	/// ```
 	/// 
 	/// On None, it panics with the given message.
 	///
 	/// ```should_panic
-	/// optional::OptionBool::None.expect("FAIL"); // panics with FAIL
+	///# use optional::OptionBool;
+	/// OptionBool::None.expect("FAIL"); // panics with FAIL
 	/// ```
 	#[inline]
 	pub fn expect(&self, msg: &str) -> bool {
@@ -219,8 +224,9 @@ impl OptionBool {
 	/// For SomeTrue/SomeFalse, the corresponding bool is returned.
 	///
 	/// ```
-	/// assert!(optional::OptionBool::SomeTrue.unwrap());
-	/// assert!(!optional::OptionBool::SomeFalse.unwrap());
+	///# use optional::OptionBool;
+	/// assert!(OptionBool::SomeTrue.unwrap());
+	/// assert!(!OptionBool::SomeFalse.unwrap());
 	/// ```
 	/// 
 	/// On None, it panics with "unwrap called on None"
@@ -361,6 +367,16 @@ impl OptionBool {
 		}
 	}
 	
+	/// Transforms the `OptionBool` into a `Result<bool, E>`, mapping `Some`X to
+    /// `Ok(`X`)` and `None` to `Err(err)`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    ///# use optional::OptionBool;
+    /// assert_eq!(OptionBool::SomeTrue.ok_or("Ouch"), Ok(true));
+    /// assert_eq!(OptionBool::None.ok_or("Ouch"), Err("Ouch"));
+    /// ```
 	#[inline]
 	pub fn ok_or<E>(self, err: E) -> Result<bool, E> {
 		match self {
@@ -370,6 +386,16 @@ impl OptionBool {
 		}
 	}
 	
+	/// Transforms the `OptionBool` into a `Result<bool, E>`, mapping `Some`X to
+    /// `Ok(`X`)` and `None` to a calculated `Err(err)`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    ///# use optional::OptionBool;
+    /// assert_eq!(OptionBool::SomeTrue.ok_or_else(|| panic!()), Ok(true));
+    /// assert_eq!(OptionBool::None.ok_or_else(|| "Ouch"), Err("Ouch"));
+    /// ```
 	#[inline]
 	pub fn ok_or_else<E, F>(self, err: F) -> Result<bool, E> 
 	where F: FnOnce() -> E {
@@ -526,6 +552,15 @@ impl OptionBool {
 		}
 	}
 	
+	/// return an iterator over all contained (that is zero or one) values.
+	///
+	/// # Examples
+	///
+	/// ```
+	///# use optional::OptionBool;
+	/// assert_eq!(None, OptionBool::None.iter().next());
+	/// assert_eq!(Some(&true), OptionBool::SomeTrue.iter().next());
+	/// ```
 	#[inline]
 	pub fn iter(&self) -> Iter<bool> {
 		self.as_slice().iter()
@@ -549,11 +584,32 @@ impl OptionBool {
 		}
 	}
 	
+	/// Takes the value out of the `OptionBool` and returns ist as 
+	/// `Option<bool>`, changing self to `None`.
+	///
+	/// # Examples
+	///
+	/// ```
+	///# use optional::OptionBool;
+	/// let mut x = OptionBool::some(true);
+	/// assert_eq!(Some(true), x.take());
+	/// assert_eq!(OptionBool::None, x);
+	/// ```
 	#[inline]
 	pub fn take(&mut self) -> Option<bool> {
 		self.take_bool().into()
 	}
 	
+	/// Takes the value out of the `OptionBool`, changing self to `None`.
+	///
+	/// # Examples
+	///
+	/// ```
+	///# use optional::OptionBool;
+	/// let mut x = OptionBool::some(true);
+	/// assert_eq!(OptionBool::some(true), x.take_bool());
+	/// assert_eq!(OptionBool::None, x);
+	/// ```
 	#[inline]
 	pub fn take_bool(&mut self) -> OptionBool {
 		mem::replace(self, None)
@@ -620,12 +676,12 @@ impl<'a> From<&'a Option<bool>> for OptionBool {
 }
 
 /// A trait whose implementation for any type `T` allows the use of 
-///`Optioned<T>`
+///`Optioned<T>` where `T` is bound by both `Sized` and `Copy`.
 pub trait Noned: Sized + Copy {
-	/// Gibt `true` zurück, wenn der Wert dem None-Wert entspricht, sonst 
-	/// `false`
+	/// Returns `true` if the contained value is the declared `None` for `T`,
+	/// `false` otherwise.
 	fn is_none(&self) -> bool;
-	/// Ermittelt den None-Wert
+	/// Returns the declared `None` value for `T`.
 	fn get_none() -> Self;
 }
 
@@ -741,7 +797,7 @@ impl<T> PartialEq for Optioned<T> where T: PartialEq + Noned + Sized + Copy {
 impl<T> Eq for Optioned<T> where T: PartialEq + Noned + Sized + Copy + Eq {}
 
 impl<T: Noned + Sized + Copy> Optioned<T> {
-	/// Create an Optioned<T> that is some(t)
+	/// Create an `Optioned<T>` that is `some(t)`.
 	///
 	/// # Panics
 	///
@@ -764,6 +820,14 @@ impl<T: Noned + Sized + Copy> Optioned<T> {
 		Optioned::<T>{ value: t }
 	}
 	
+	/// Create an `Optioned<T>` that is `none()`.
+	///
+	/// # Examples
+	/// 
+	/// ```
+	///# use ::optional::Optioned;
+	/// Optioned::<u16>::none(); // Optioned(std::u16::MAX)
+	/// ```
 	#[inline]
 	pub fn none() -> Self {
 		Optioned::<T>{ value: <T as Noned>::get_none() }
@@ -774,22 +838,66 @@ impl<T: Noned + Sized + Copy> Optioned<T> {
 		if self.value.is_none() { Option::None } else { Option::Some(self.value) }
 	}
 	
+	/// Returns `true` if this `Optioned` is `None`, `false` otherwise.
 	#[inline]
 	pub fn is_none(&self) -> bool {
 		self.value.is_none()
 	}
 	
+	/// Returns `true` if this `Optioned` contains a value, `false` otherwise.
 	#[inline]
 	pub fn is_some(&self) -> bool {
 		!self.value.is_none()
 	}
 	
+	/// Unwraps the value, if any, else panics with the given message.
+	///
+	/// # Panics
+	///
+	/// if self is None
+	///
+	/// # Examples
+	/// 
+	/// For Some(_), the corresponding value is returned.
+	///
+	/// ```
+	///# use optional::Optioned;
+	/// assert_eq!(42u8, Optioned::some(42u8).expect("FAIL"));
+	/// ```
+	/// 
+	/// On None, it panics with the given message.
+	///
+	/// ```should_panic
+	///# use optional::Optioned;
+	///Optioned::<u8>::none().expect("FAIL"); // panics with FAIL
+	/// ```
 	#[inline]
 	pub fn expect(&self, msg: &str) -> T {
 		if self.is_none() { panic!("{}", msg) }
 		self.value
 	}
 	
+	/// Unwraps the value, if any, else panics with "unwrap called on None".
+	///
+	/// # Panics
+	///
+	/// if self is None
+	///
+	/// # Examples
+	/// 
+	/// For Some(_), the corresponding value is returned.
+	///
+	/// ```
+	///# use optional::Optioned;
+	/// assert_eq!(42u8, Optioned::some(42u8).unwrap());
+	/// ```
+	/// 
+	/// On None, it panics with the given message.
+	///
+	/// ```should_panic
+	///# use optional::Optioned;
+	///Optioned::<u8>::none().unwrap(); // panics
+	/// ```
 	#[inline]
 	pub fn unwrap(&self) -> T {
 		self.expect("unwrap called on None")
@@ -831,6 +939,22 @@ impl<T: Noned + Sized + Copy> Optioned<T> {
 	#[inline]
 	pub fn take(&mut self) -> Option<T> {
 		mem::replace(self, Self::none()).as_option()
+	}
+	
+	/// Return a possibly empty slice over the contained value, if any.
+	///
+	/// # Examples
+	/// ```
+	///# use optional::Optioned;
+	/// assert_eq!(&[42], Optioned::some(42u8).as_slice());
+	/// assert!(Optioned::<i16>::none().as_slice().is_empty());
+	/// ```
+	#[inline]
+	pub fn as_slice<'a>(&'a self) -> &'a [T] {
+		unsafe {
+			std::slice::from_raw_parts(&self.value, 
+				if self.is_none() { 0 } else { 1 })
+		}
 	}
 	
 	#[inline]

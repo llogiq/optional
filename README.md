@@ -11,6 +11,10 @@ additional methods where `Option<bool>` would recieve or return another
 `Option<bool>`, a `_bool` prefix is used to receive/return `OptionBool` 
 instead.
 
+Note that due to the internal conversion it is generally impossible to create
+`iter_mut()` or `as_mut_slice()` methods. Therefore those methods cannot be
+supported.
+
 Not only does `OptionBool` improve space efficiency as opposed to 
 `Option<bool>`, most methods also perform a little faster in my benchmarks. On 
 nightly, On an Intel(R) Core(TM)2 Quad CPU Q8400 @ 
@@ -57,8 +61,6 @@ are impls For `i8..64`, `u8..64`, `isize`, `usize`, `f32` and `f64`, and it's
 easy enough to Implement it for your own type (have a look at the Noned trait). 
 The None value for the int types is their `MIN`, for the unsigned types is 
 their `MAX` and for floats is `NAN`.
-
-
 
 # Documentation
 
