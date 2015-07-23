@@ -1,7 +1,9 @@
-#![cfg(unstable)]
 #![feature(test)]
 
 extern crate test;
+extern crate optional;
+
+use optional::OptionBool;
 
 #[bench]
 fn bench_is_some_optbool(bench: &mut test::Bencher) {	
