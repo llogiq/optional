@@ -963,6 +963,42 @@ impl<T: Noned + Sized + Copy> Optioned<T> {
 	}
 }
 
+/// Create an `Optioned<T>` that is `some(t)`.
+///
+/// # Panics
+///
+/// panics if the supplied value is the None value
+///
+/// # Examples
+/// 
+/// ```
+///# use ::optional::some;
+/// some(1i32); // Optioned(1i32)
+/// ```
+///
+/// ```should_panic
+///# use ::optional::some;
+/// some(std::f64::NAN); // panic!s
+/// ```
+pub fn some<T: Noned + Sized + Copy>(value: T) -> Optioned<T> {
+	Optioned::<T>::some(value)
+}
+
+/// Create a `None Optioned<T>`. Note that the type must be inferrible
+/// from the context, or you'd need to call with `::<T>` where `T` is
+/// the specific type.
+///
+/// # Examples
+///
+/// ```
+///# use ::optional::{none, Optioned};
+/// let x : Optioned<i16> = none();
+/// none::<f32>();
+/// ```
+pub fn none<T: Noned + Sized + Copy>() -> Optioned<T> {
+	Optioned::<T>::none()
+} 
+
 impl<T: Noned + Sized + Copy + Debug> Debug for Optioned<T> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), Error> {
 		if self.is_none() {
