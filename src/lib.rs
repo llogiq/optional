@@ -677,7 +677,7 @@ impl<'a> From<&'a Option<bool>> for OptionBool {
 
 /// A trait whose implementation for any type `T` allows the use of 
 ///`Optioned<T>` where `T` is bound by both `Sized` and `Copy`.
-pub trait Noned: Sized + Copy {
+pub trait Noned: {
 	/// Returns `true` if the contained value is the declared `None` for `T`,
 	/// `false` otherwise.
 	fn is_none(&self) -> bool;
@@ -685,7 +685,7 @@ pub trait Noned: Sized + Copy {
 	fn get_none() -> Self;
 }
 
-impl Noned for u8 { 
+impl Noned for u8 {
 	#[inline]
 	fn is_none(&self) -> bool { self == &std::u8::MAX } 
 
@@ -787,14 +787,38 @@ impl Noned for f64 {
 #[derive(Copy, Clone)]
 pub struct Optioned<T: Noned + Sized + Copy> { value: T }
 
+/// Equality works as usual.
+///
+/// # Examples
+/// 
+/// ```
+///# use ::optional::{some, none};
+/// assert_eq!(some(1u8), some(1u8));
+/// assert_eq!(none::<u32>(), none::<u32>());
+/// ```
 impl<T> PartialEq for Optioned<T> where T: PartialEq + Noned + Sized + Copy {
 	#[inline]
 	fn eq(&self, other: &Self) -> bool {
-		&self.value == &other.value
+		if self.is_none() { 
+			other.is_none() // null check to ensure none == none
+		} else { 
+			&self.value == &other.value 
+		}
 	}
 }
 
 impl<T> Eq for Optioned<T> where T: PartialEq + Noned + Sized + Copy + Eq {}
+/// Eq works also on Optioned<f32> because we use NANs as none.
+///
+/// # Examples
+/// 
+/// ```
+///# use ::optional::{some, none};
+/// assert_eq!(some(1f32), some(1f32));
+/// assert_eq!(none::<f32>(), none::<f32>());
+/// ```
+impl<T> Eq for Optioned<f32> {}
+impl<T> Eq for Optioned<f64> {}
 
 impl<T: Noned + Sized + Copy> Optioned<T> {
 	/// Create an `Optioned<T>` that is `some(t)`.
@@ -903,39 +927,107 @@ impl<T: Noned + Sized + Copy> Optioned<T> {
 		self.expect("unwrap called on None")
 	}
 	
+	/// Returns the contained value or a default.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    ///# use optional::{some, none};
+    /// assert_eq!(-1i8, some(-1i8).unwrap_or(127i8));
+    /// assert_eq!(42u16, none().unwrap_or(42u16));
+    /// ```
 	#[inline]
 	pub fn unwrap_or(&self, def: T) -> T {
 		if self.is_none() { def } else { self.value }
 	}
 	
+	/// Returns the contained value or a calculated default.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    ///# use optional::{some, none};
+    /// assert_eq!(-1i8, some(-1i8).unwrap_or_else(|| panic!()));
+    /// assert_eq!(42u16, none().unwrap_or_else(|| 42u16));
+    /// ```
 	#[inline]
 	pub fn unwrap_or_else<F>(self, f: F) -> T where F: FnOnce() -> T {
 		if self.is_none() { f() } else { self.value }
 	}
 	
+	/// Maps the Optioned to an Option<U> by applying the function over the
+	/// contained value, if any.
+	///
+	/// # Examples
+	/// ```
+	///# use optional::{some, none};
+	/// assert_eq!(Some(-42), some(42i8).map(|x| -x));
+	/// assert_eq!(None, none::<i8>().map(|x| -x));
+	/// ```
 	#[inline]
 	pub fn map<U, F>(self, f: F) -> Option<U>
 	where F: FnOnce(T) -> U {
 		if self.is_none() { Option::None } else { Option::Some(f(self.value)) }
 	}
 	
+	/// Maps the Optioned<T> to an Optioned<U> by applying the function over
+	/// the contained value, if any. Requires that the result type of the
+	/// function be Noned + Sized + Copy, as other types aren't compatible with
+	/// Optioned.
+	///
+	/// # Examples
+	/// ```
+	///# use optional::{some, none};
+	/// assert_eq!(some(-42), some(42i8).map_t(|x| -x));
+	/// assert_eq!(none::<i8>(), none::<i8>().map_t(|x| -x));
+	/// ```
 	#[inline]
-	pub fn map_t<U, F>(self, f: F) -> Self
-	where F: FnOnce(T) -> T {
-		if self.is_none() { self } else { Self::some(f(self.value)) }
+	pub fn map_t<U, F>(self, f: F) -> Optioned<U>
+	where F: FnOnce(T) -> U, U: Noned + Sized + Copy {
+		if self.is_none() { none() } else { some(f(self.value)) }
 	}
 	
+	/// Maps the contained value to a U by applying the function or return a 
+	/// default.
+	///
+	/// # Examples
+	/// ```
+	///# use optional::{some, none};
+	/// assert_eq!("1", some(1usize).map_or("Unknown", |b| b.into()));
+	/// assert_eq!("Unknown", none::<usize>().map_or("Unknown", |b| b.into()));
+	/// ```
 	#[inline]
 	pub fn map_or<U, F>(self, default: U, f: F) -> U where F: FnOnce(T) -> U {
 		if self.is_none() { default } else { f(self.value) }
 	}
 	
+	/// Maps a value to a U by applying the function or return a computed 
+	/// default.
+	///
+	/// # Examples
+	/// ```
+	///# use optional::{some, none};
+	/// assert_eq!("1", some(1usize).map_or_else(|| "Unknown", |b| b.into()));
+	/// assert_eq!("Unknown", none::<usize>().map_or_else(
+	///     || "Unknown", |b| b.into()));
+	/// ```
 	#[inline]
 	pub fn map_or_else<U, D, F>(self, default: D, f: F) -> U 
 	where D: FnOnce() -> U, F: FnOnce(T) -> U {
 		if self.is_none() { default() } else { f(self.value) }
 	}
 	
+	/// Takes the value out of the `Optioned` and returns ist as 
+	/// `Option<T>`, changing self to `None`.
+	///
+	/// # Examples
+	///
+	/// ```
+	///# use optional::{some, none};
+	/// let mut x = some(1u8);
+	/// assert_eq!(Some(1u8), x.take());
+	/// assert!(x.is_none());
+	/// ```
 	#[inline]
 	pub fn take(&mut self) -> Option<T> {
 		mem::replace(self, Self::none()).as_option()
@@ -945,9 +1037,9 @@ impl<T: Noned + Sized + Copy> Optioned<T> {
 	///
 	/// # Examples
 	/// ```
-	///# use optional::Optioned;
-	/// assert_eq!(&[42], Optioned::some(42u8).as_slice());
-	/// assert!(Optioned::<i16>::none().as_slice().is_empty());
+	///# use optional::{some, none};
+	/// assert_eq!(&[42], some(42u8).as_slice());
+	/// assert!(none::<i16>().as_slice().is_empty());
 	/// ```
 	#[inline]
 	pub fn as_slice<'a>(&'a self) -> &'a [T] {
@@ -957,6 +1049,15 @@ impl<T: Noned + Sized + Copy> Optioned<T> {
 		}
 	}
 	
+	/// return an iterator over all contained (that is zero or one) values.
+	///
+	/// # Examples
+	///
+	/// ```
+	///# use optional::{some, none};
+	/// assert_eq!(None, none::<u64>().iter().next());
+	/// assert_eq!(Some(42u64), some(42u64).iter().next());
+	/// ```
 	#[inline]
 	pub fn iter(&self) -> OptionedIter<T> {
 		OptionedIter { o: *self } // make a copy
