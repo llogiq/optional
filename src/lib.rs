@@ -808,17 +808,6 @@ impl<T> PartialEq for Optioned<T> where T: PartialEq + Noned + Sized + Copy {
 }
 
 impl<T> Eq for Optioned<T> where T: PartialEq + Noned + Sized + Copy + Eq {}
-/// Eq works also on Optioned<f32> because we use NANs as none.
-///
-/// # Examples
-/// 
-/// ```
-///# use ::optional::{some, none};
-/// assert_eq!(some(1f32), some(1f32));
-/// assert_eq!(none::<f32>(), none::<f32>());
-/// ```
-impl<T> Eq for Optioned<f32> {}
-impl<T> Eq for Optioned<f64> {}
 
 impl<T: Noned + Sized + Copy> Optioned<T> {
 	/// Create an `Optioned<T>` that is `some(t)`.

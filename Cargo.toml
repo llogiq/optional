@@ -1,6 +1,6 @@
 [package]
 name = "optional"
-version = "0.0.9"
+version = "0.0.10"
 authors = ["Andre Bogus <bogusandre@gmail.com>"]
 description = "This crate supplies a number of Option-like primitive types"
 readme = "README.md"
