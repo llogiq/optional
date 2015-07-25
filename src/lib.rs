@@ -71,7 +71,7 @@ const OB_SOME_TRUE_REF : &'static Option<bool> = &OB_SOME_TRUE;
 const OB_SOME_FALSE_REF : &'static Option<bool> = &OB_SOME_FALSE;
 const OB_NONE_REF : &'static Option<bool> = &OB_NONE;
 
-/// We can deref-coerce to Option<bool>
+/// We can deref-coerce to `Option<bool>`
 impl Deref for OptionBool {
 	type Target = Option<bool>;
 
@@ -280,8 +280,8 @@ impl OptionBool {
 		}
 	}
 	
-	/// Maps an OptionBool to an Option<U> by applying the function over the
-	/// contained bool.
+	/// Maps an `OptionBool` to an `Option<U>` by applying the function
+	/// over the contained bool.
 	///
 	/// # Examples
 	///
@@ -302,12 +302,12 @@ impl OptionBool {
 		}
 	}
 	
-	/// Maps an OptionBool to another OptionBool by applying the function over
-	/// the contained bool.
+	/// Maps an `OptionBool` to another `OptionBool` by applying the
+	/// function over the contained bool.
 	///
 	/// # Examples
 	///
-	/// Invert the contained bool
+	/// Invert the contained `bool`
 	///
 	/// ```
 	///# use optional::OptionBool;
@@ -326,7 +326,8 @@ impl OptionBool {
 		}
 	}
 	
-	/// Maps a value to a U by applying the function or return a default U.
+	/// Maps a value to a `U` by applying the function or return a 
+	/// default `U`.
 	///
 	/// # Examples
 	///
@@ -347,8 +348,8 @@ impl OptionBool {
 		}
 	}
 	
-	/// Maps a value to a U by applying the function or return a computed 
-	/// default.
+	/// Maps a value to a `U` by applying the function or return a 
+	/// computed default.
 	///
 	/// # Examples
 	///
@@ -367,8 +368,8 @@ impl OptionBool {
 		}
 	}
 	
-	/// Transforms the `OptionBool` into a `Result<bool, E>`, mapping `Some`X to
-    /// `Ok(`X`)` and `None` to `Err(err)`.
+	/// Transforms the `OptionBool` into a `Result<bool, E>`, mapping 
+	/// `Some`X to `Ok(`X`)` and `None` to `Err(err)`.
     ///
     /// # Examples
     ///
@@ -781,11 +782,11 @@ impl Noned for f64 {
 	fn get_none() -> f64 { std::f64::NAN }
 }
 
-/// An Option<T>-like structure that takes only as much space as the enclosed
-/// value, at the cost of removing one particular None value from the value 
-/// domain (see Noned)
+/// An `Option<T>`-like structure that takes only as much space as the enclosed
+/// value, at the cost of removing one particular `None` value from the value 
+/// domain (see `Noned`)
 #[derive(Copy, Clone)]
-pub struct Optioned<T: Noned + Sized + Copy> { value: T }
+pub struct Optioned<T: Noned + Copy> { value: T }
 
 /// Equality works as usual.
 ///
@@ -796,7 +797,7 @@ pub struct Optioned<T: Noned + Sized + Copy> { value: T }
 /// assert_eq!(some(1u8), some(1u8));
 /// assert_eq!(none::<u32>(), none::<u32>());
 /// ```
-impl<T> PartialEq for Optioned<T> where T: PartialEq + Noned + Sized + Copy {
+impl<T> PartialEq for Optioned<T> where T: PartialEq + Noned + Copy {
 	#[inline]
 	fn eq(&self, other: &Self) -> bool {
 		if self.is_none() { 
@@ -807,9 +808,9 @@ impl<T> PartialEq for Optioned<T> where T: PartialEq + Noned + Sized + Copy {
 	}
 }
 
-impl<T> Eq for Optioned<T> where T: PartialEq + Noned + Sized + Copy + Eq {}
+impl<T> Eq for Optioned<T> where T: PartialEq + Noned + Copy + Eq {}
 
-impl<T: Noned + Sized + Copy> Optioned<T> {
+impl<T: Noned + Copy> Optioned<T> {
 	/// Create an `Optioned<T>` that is `some(t)`.
 	///
 	/// # Panics
@@ -944,7 +945,7 @@ impl<T: Noned + Sized + Copy> Optioned<T> {
 		if self.is_none() { f() } else { self.value }
 	}
 	
-	/// Maps the Optioned to an Option<U> by applying the function over the
+	/// Maps the `Optioned` to an `Option<U>` by applying the function over the
 	/// contained value, if any.
 	///
 	/// # Examples
@@ -959,9 +960,9 @@ impl<T: Noned + Sized + Copy> Optioned<T> {
 		if self.is_none() { Option::None } else { Option::Some(f(self.value)) }
 	}
 	
-	/// Maps the Optioned<T> to an Optioned<U> by applying the function over
+	/// Maps the `Optioned<T>` to an `Optioned<U>` by applying the function over
 	/// the contained value, if any. Requires that the result type of the
-	/// function be Noned + Sized + Copy, as other types aren't compatible with
+	/// function be `Noned + Copy`, as other types aren't compatible with
 	/// Optioned.
 	///
 	/// # Examples
@@ -972,11 +973,11 @@ impl<T: Noned + Sized + Copy> Optioned<T> {
 	/// ```
 	#[inline]
 	pub fn map_t<U, F>(self, f: F) -> Optioned<U>
-	where F: FnOnce(T) -> U, U: Noned + Sized + Copy {
+	where F: FnOnce(T) -> U, U: Noned + Copy {
 		if self.is_none() { none() } else { some(f(self.value)) }
 	}
 	
-	/// Maps the contained value to a U by applying the function or return a 
+	/// Maps the contained value to a `U` by applying the function or return a 
 	/// default.
 	///
 	/// # Examples
@@ -990,7 +991,7 @@ impl<T: Noned + Sized + Copy> Optioned<T> {
 		if self.is_none() { default } else { f(self.value) }
 	}
 	
-	/// Maps a value to a U by applying the function or return a computed 
+	/// Maps a value to a `U` by applying the function or return a computed 
 	/// default.
 	///
 	/// # Examples
@@ -1070,7 +1071,7 @@ impl<T: Noned + Sized + Copy> Optioned<T> {
 ///# use ::optional::some;
 /// some(std::f64::NAN); // panic!s
 /// ```
-pub fn some<T: Noned + Sized + Copy>(value: T) -> Optioned<T> {
+pub fn some<T: Noned + Copy>(value: T) -> Optioned<T> {
 	Optioned::<T>::some(value)
 }
 
@@ -1085,11 +1086,24 @@ pub fn some<T: Noned + Sized + Copy>(value: T) -> Optioned<T> {
 /// let x : Optioned<i16> = none();
 /// none::<f32>();
 /// ```
-pub fn none<T: Noned + Sized + Copy>() -> Optioned<T> {
+pub fn none<T: Noned + Copy>() -> Optioned<T> {
 	Optioned::<T>::none()
 } 
 
-impl<T: Noned + Sized + Copy + Debug> Debug for Optioned<T> {
+/// Wrap a `T` into an `Optioned<T>`, regardless of its None-ness.
+///
+/// # Examples
+///
+/// ```
+///# use optional::wrap;
+/// assert!(wrap(1u8).is_some());
+/// assert!(wrap(255u8).is_none());
+/// ```
+pub fn wrap<T: Noned + Copy>(v: T) -> Optioned<T> {
+	Optioned{ value: v }
+}
+
+impl<T: Noned + Copy + Debug> Debug for Optioned<T> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), Error> {
 		if self.is_none() {
 			write!(f, "None")
@@ -1100,9 +1114,9 @@ impl<T: Noned + Sized + Copy + Debug> Debug for Optioned<T> {
 }
 
 #[derive(Copy, Clone)]
-pub struct OptionedIter<T: Noned + Sized + Copy> { o: Optioned<T> }
+pub struct OptionedIter<T: Noned + Copy> { o: Optioned<T> }
 
-impl<T: Noned + Sized + Copy> Iterator for OptionedIter<T> {
+impl<T: Noned + Copy> Iterator for OptionedIter<T> {
 	type Item=T;
 	
 	#[inline]
@@ -1111,21 +1125,21 @@ impl<T: Noned + Sized + Copy> Iterator for OptionedIter<T> {
 	}
 }
 
-impl<'a, T: Noned + Sized + Copy> From<&'a Option<T>> for Optioned<T> {
+impl<'a, T: Noned + Copy> From<&'a Option<T>> for Optioned<T> {
 	#[inline]
 	fn from(o: &Option<T>) -> Optioned<T> {
 		o.map_or_else(Self::none, Self::some)
 	}
 }
 
-impl<T: Noned + Sized + Copy> From<Option<T>> for Optioned<T> {
+impl<T: Noned + Copy> From<Option<T>> for Optioned<T> {
 	#[inline]
 	fn from(o: Option<T>) -> Optioned<T> {
 		o.map_or_else(Self::none, Self::some)
 	}
 }
 
-impl<T: Noned + Sized + Copy> Into<Option<T>> for Optioned<T> {
+impl<T: Noned + Copy> Into<Option<T>> for Optioned<T> {
 	#[inline]
 	fn into(self) -> Option<T> { self.as_option() }
 }
