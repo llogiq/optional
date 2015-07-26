@@ -895,18 +895,18 @@ impl<T: Noned + Copy> Optioned<T> {
 	///
 	/// # Panics
 	///
-	/// if self is None
+	/// if self is `None`
 	///
 	/// # Examples
 	/// 
-	/// For Some(_), the corresponding value is returned.
+	/// For `Some(_)`, the corresponding value is returned.
 	///
 	/// ```
 	///# use optional::Optioned;
 	/// assert_eq!(42u8, Optioned::some(42u8).unwrap());
 	/// ```
 	/// 
-	/// On None, it panics with the given message.
+	/// On `None`, it panics with the given message.
 	///
 	/// ```should_panic
 	///# use optional::Optioned;
