@@ -46,6 +46,7 @@ use std::iter::Iterator;
 use std::mem;
 use std::ops::Deref;
 use std::fmt::{self, Debug, Error};
+use std::hash::{Hash, Hasher};
 use self::OptionBool::*;
 
 /// The `OptionBool` type, a space-efficient Option<bool> replacement
@@ -627,6 +628,40 @@ impl Debug for OptionBool {
 	}
 }
 
+pub struct IterBool { o: OptionBool }
+
+impl Iterator for IterBool {
+	type Item = bool;
+	
+	#[inline]
+	fn next(&mut self) -> Option<bool> {
+		self.o.take()
+	}
+}
+
+/// IntoIterator works as expected
+///
+/// # Examples
+///
+/// ```
+///# use optional::OptionBool;
+/// let mut pass : bool = false;
+/// for b in OptionBool::SomeTrue { pass = b; }
+/// assert!(pass);
+///
+/// for b in OptionBool::None { assert!(false); }
+/// ```
+impl IntoIterator for OptionBool {
+	type Item = bool;
+	type IntoIter = IterBool;
+	
+	 #[inline]
+    fn into_iter(self) -> IterBool {
+		IterBool{ o: self }
+    }
+}
+
+/// OptionBool defaults to None.
 impl Default for OptionBool {
 	#[inline]
 	fn default() -> OptionBool { None }
@@ -782,6 +817,99 @@ impl Noned for f64 {
 	fn get_none() -> f64 { std::f64::NAN }
 }
 
+///Equality within Optioned
+pub trait OptEq {
+	#[inline]
+	fn opt_eq(&self, other: &Self) -> bool;
+}
+
+impl OptEq for u8 { fn opt_eq(&self, other: &Self) -> bool { self == other } }
+impl OptEq for u16 { fn opt_eq(&self, other: &Self) -> bool { self == other } }
+impl OptEq for u32 { fn opt_eq(&self, other: &Self) -> bool { self == other } }
+impl OptEq for u64 { fn opt_eq(&self, other: &Self) -> bool { self == other } }
+impl OptEq for usize { fn opt_eq(&self, other: &Self) -> bool { self == other } }
+
+impl OptEq for i8 { fn opt_eq(&self, other: &Self) -> bool { self == other } }
+impl OptEq for i16 { fn opt_eq(&self, other: &Self) -> bool { self == other } }
+impl OptEq for i32 { fn opt_eq(&self, other: &Self) -> bool { self == other } }
+impl OptEq for i64 { fn opt_eq(&self, other: &Self) -> bool { self == other } }
+impl OptEq for isize { fn opt_eq(&self, other: &Self) -> bool { self == other } }
+
+impl OptEq for f32 { 
+	fn opt_eq(&self, other: &Self) -> bool { 
+		if self.is_nan() { other.is_nan() } else { self == other } 
+	}
+}
+impl OptEq for f64 { 
+	fn opt_eq(&self, other: &Self) -> bool { 
+		if self.is_nan() { other.is_nan() } else { self == other } 
+	}
+}
+
+///Ordering within Optioned
+pub trait OptOrd {
+	#[inline]
+	fn opt_cmp(&self, other: &Self) -> Ordering;
+}
+
+#[inline]
+fn _opt_cmp<T: Ord + Copy + Noned>(a: &T, b: &T) -> Ordering {
+	if a.is_none() {
+		if b.is_none() { Ordering::Equal } else { Ordering::Less }
+	} else {
+		if b.is_none() { Ordering::Greater } else { a.cmp(b) }
+	}
+}
+
+#[inline]
+fn _opt_cmp_part<T: PartialOrd + Copy + Noned>(a: &T, b: &T) -> Ordering {
+	if a.is_none() {
+		if b.is_none() { Ordering::Equal } else { Ordering::Less }
+	} else {
+		if b.is_none() { Ordering::Greater } else { a.partial_cmp(b).unwrap() }
+	}
+}
+
+impl OptOrd for u8 {
+	fn opt_cmp(&self, other: &Self) -> Ordering { _opt_cmp(self, other) }
+}
+impl OptOrd for u16 {
+	fn opt_cmp(&self, other: &Self) -> Ordering { _opt_cmp(self, other) }
+}
+impl OptOrd for u32 {
+	fn opt_cmp(&self, other: &Self) -> Ordering { _opt_cmp(self, other) }
+}
+impl OptOrd for u64 {
+	fn opt_cmp(&self, other: &Self) -> Ordering { _opt_cmp(self, other) }
+}
+impl OptOrd for usize {
+	fn opt_cmp(&self, other: &Self) -> Ordering { _opt_cmp(self, other) }
+}
+
+impl OptOrd for i8 {
+	fn opt_cmp(&self, other: &Self) -> Ordering { self.cmp(other) }
+}
+impl OptOrd for i16 {
+	fn opt_cmp(&self, other: &Self) -> Ordering { self.cmp(other) }
+}
+impl OptOrd for i32 {
+	fn opt_cmp(&self, other: &Self) -> Ordering { self.cmp(other) }
+}
+impl OptOrd for i64 {
+	fn opt_cmp(&self, other: &Self) -> Ordering { self.cmp(other) }
+}
+impl OptOrd for isize {
+	fn opt_cmp(&self, other: &Self) -> Ordering { self.cmp(other) }
+}
+
+impl OptOrd for f32 {
+	fn opt_cmp(&self, other: &Self) -> Ordering { _opt_cmp_part(self, other) }
+}
+impl OptOrd for f64 {
+	fn opt_cmp(&self, other: &Self) -> Ordering { _opt_cmp_part(self, other) }
+}
+
+
 /// An `Option<T>`-like structure that takes only as much space as the enclosed
 /// value, at the cost of removing one particular `None` value from the value 
 /// domain (see `Noned`)
@@ -797,18 +925,35 @@ pub struct Optioned<T: Noned + Copy> { value: T }
 /// assert_eq!(some(1u8), some(1u8));
 /// assert_eq!(none::<u32>(), none::<u32>());
 /// ```
-impl<T> PartialEq for Optioned<T> where T: PartialEq + Noned + Copy {
+impl<T> PartialEq for Optioned<T> where T: OptEq + Noned + Copy {
 	#[inline]
 	fn eq(&self, other: &Self) -> bool {
-		if self.is_none() { 
-			other.is_none() // null check to ensure none == none
-		} else { 
-			&self.value == &other.value 
-		}
+		self.value.opt_eq(&other.value)
 	}
 }
 
-impl<T> Eq for Optioned<T> where T: PartialEq + Noned + Copy + Eq {}
+impl<T> Eq for Optioned<T> where T: OptEq + Noned + Copy {}
+
+impl<T> PartialOrd for Optioned<T> where T: PartialEq + OptEq + OptOrd + Noned + Copy {
+	#[inline]
+	fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+		Some(self.value.opt_cmp(&other.value))
+	}
+}
+
+impl<T> Ord for Optioned<T> where T: Eq + OptEq + OptOrd + Noned + Copy {
+	#[inline]
+	fn cmp(&self, other: &Self) -> Ordering {
+		self.value.opt_cmp(&other.value)
+	}
+}
+
+impl<T> Hash for Optioned<T> where T: Noned + Copy + Hash {
+	#[inline]
+	fn hash<H>(&self, state: &mut H) where H: Hasher {
+		self.value.hash(state)
+	}
+}
 
 impl<T: Noned + Copy> Optioned<T> {
 	/// Create an `Optioned<T>` that is `some(t)`.
@@ -1110,6 +1255,13 @@ impl<T: Noned + Copy + Debug> Debug for Optioned<T> {
 		} else {
 			write!(f, "Some({:?})", &self.value)
 		}
+	}
+}
+
+impl<T: Noned + Copy> Default for Optioned<T> {
+	#[inline]
+	fn default() -> Optioned<T> {
+		none()
 	}
 }
 
