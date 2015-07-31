@@ -261,7 +261,6 @@ impl OptionBool {
 		}
 	}
 	
-	
 	/// Returns the contained bool or a computed default.
     ///
     /// # Examples
@@ -1060,6 +1059,20 @@ impl<T: Noned + Copy> Optioned<T> {
 	#[inline]
 	pub fn unwrap(&self) -> T {
 		self.expect("unwrap called on None")
+	}
+	
+	/// Returns the contained value, even if None.
+	///
+	/// # Examples
+	///
+	/// ```
+    ///# use optional::{some, none};
+    /// assert_eq!(-128i8, none().unpack());
+    /// assert_eq!(1u32, some(1).unpack());
+    /// ```
+	#[inline]
+	pub fn unpack(&self) -> T {
+		self.value
 	}
 	
 	/// Returns the contained value or a default.
