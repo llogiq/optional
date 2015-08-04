@@ -1,7 +1,8 @@
 # Optional
 
-
-[![travis-badge][]][travis] [![Current Version](http://meritbadge.herokuapp.com/optional)](https://crates.io/crates/optional) [![license-badge][]][license]
+[![Build Status](https://travis-ci.org/llogiq/optional.svg)](https://travis-ci.org/llogiq/optional)
+[![Current Version](http://meritbadge.herokuapp.com/optional)](https://crates.io/crates/optional)
+[![License: MIT](https://img.shields.io/dub/l/vibe-d.svg)(LICENSE)
 
 This package aims to offer some `Option<_>`-like values that allow a 
 space-optimized representation.
