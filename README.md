@@ -62,15 +62,15 @@ Option but needs no additional storage, declaring a None value instead. Their
 are impls For `i8..64`, `u8..64`, `isize`, `usize`, `f32` and `f64`, and it's 
 easy enough to Implement it for your own type (have a look at the Noned trait). 
 The None value for the int types is their `MIN`, for the unsigned types is 
-their `MAX` and for floats is `NAN`.
+their `MAX` and for floats is `NAN` (regardless of sign).
 
 # Documentation
 
 [API documentation](http://llogiq.github.io/optional)
-(It's already quite good for `OptionBool`, I need to work on `Optioned`)
 
-You also may want to have a look at the somewhat better documented
-[Option docs](http://doc.rust-lang.org/std/option/enum.Option.html)
+You also may want to have a look at the very well documented
+[Option docs](http://doc.rust-lang.org/std/option/enum.Option.html), on which
+this crate is based.
 
 # License
 
