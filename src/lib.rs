@@ -1,13 +1,13 @@
 // Copyright 2015 Andre Bogus
-// Licensed under the MIT license <LICENSE-MIT or 
+// Licensed under the MIT license <LICENSE-MIT or
 // http://opensource.org/licenses/MIT>. This file may not be copied, modified,
 // or distributed except according to those terms.
 
 //! Space-efficient optional values
 //!
-//! Type `OptionBool` represents an optional boolean value, similar to 
+//! Type `OptionBool` represents an optional boolean value, similar to
 //! `Option<bool>`. Most function implementations are similar or equal.
-//! Note that the `map_bool(..)` `and_bool(..)`, `and_then_bool(..)`, 
+//! Note that the `map_bool(..)` `and_bool(..)`, `and_then_bool(..)`,
 //!`or_bool(..)` and `or_else_bool(..)` functions are working similar to the
 //! methods without the `_bool` suffix, but require and return `OptionBool`
 //! instead of `Option<bool>`. This allows people to stay within the type.
@@ -21,7 +21,7 @@
 //! Then there is the `Optioned<T>` type which wraps a type `T` as an optional
 //! value of `T` where one particular value represents None. `Optioned<T>`
 //! requires the exact same space as T:
-//! 
+//!
 //! ```
 //! assert!(std::mem::size_of::<optional::Optioned<i64>>() ==
 //!     std::mem::size_of::<i64>());
@@ -31,8 +31,8 @@
 //!     std::mem::size_of::<u8>());
 //! ```
 //!
-//! There are implementations for `u8..64,usize` with `std::u..::MAX` 
-//! representing None, also for `i8..64,isize` with `std::i..::MIN` 
+//! There are implementations for `u8..64,usize` with `std::u..::MAX`
+//! representing None, also for `i8..64,isize` with `std::i..::MIN`
 //! representing None, and for `f32, f64` with `std::f..::NAN` representing
 //! None.
 //!
@@ -76,12 +76,12 @@ const OB_NONE_REF : &'static Option<bool> = &OB_NONE;
 impl Deref for OptionBool {
 	type Target = Option<bool>;
 
-	#[inline]	
+	#[inline]
 	fn deref(&self) -> &'static Option<bool> {
-		match self {
-			&SomeTrue => OB_SOME_TRUE_REF,
-			&SomeFalse => OB_SOME_FALSE_REF,
-			&None => OB_NONE_REF,
+		match *self {
+			SomeTrue => OB_SOME_TRUE_REF,
+			SomeFalse => OB_SOME_FALSE_REF,
+			None => OB_NONE_REF,
 		}
 	}
 }
@@ -120,7 +120,7 @@ impl PartialOrd for OptionBool {
 			(&None, &None) => Option::Some(Ordering::Equal),
 			(&SomeTrue, &SomeFalse) |
 			(&SomeTrue, &None) |
-			(&SomeFalse, &None) => 
+			(&SomeFalse, &None) =>
 				Option::Some(Ordering::Greater),
 			_ => Option::Some(Ordering::Less),
 		}
@@ -141,7 +141,7 @@ impl OptionBool {
 	pub fn some(b: bool) -> Self {
 		if b { SomeTrue } else { SomeFalse }
 	}
-	
+
 	/// Create a None value.
 	///
 	/// # Examples
@@ -152,7 +152,7 @@ impl OptionBool {
 	/// ```
 	#[inline]
 	pub fn none() -> Self { None }
-	
+
 	/// Returns true if the option is a Some value.
 	///
 	/// # Examples
@@ -167,11 +167,11 @@ impl OptionBool {
 	pub fn is_some(&self) -> bool {
 		if let &None = self { false } else { true }
 	}
-	
+
 	/// Returns true if the option is a Some value.
 	///
 	/// # Examples
-	/// 
+	///
 	/// ```
 	///# use optional::OptionBool;
 	/// assert!(!OptionBool::SomeTrue.is_none());
@@ -182,7 +182,7 @@ impl OptionBool {
 	pub fn is_none(&self) -> bool {
 		if let &None = self { true } else { false }
 	}
-	
+
 	/// Unwraps the contained bool, panics on None with given message.
 	///
 	/// # Panics
@@ -190,7 +190,7 @@ impl OptionBool {
 	/// if self is None
 	///
 	/// # Examples
-	/// 
+	///
 	/// For SomeTrue/SomeFalse, the corresponding bool is returned.
 	///
 	/// ```
@@ -198,7 +198,7 @@ impl OptionBool {
 	/// assert!(OptionBool::SomeTrue.expect("FAIL"));
 	/// assert!(!OptionBool::SomeFalse.expect("FAIL"));
 	/// ```
-	/// 
+	///
 	/// On None, it panics with the given message.
 	///
 	/// ```should_panic
@@ -207,13 +207,13 @@ impl OptionBool {
 	/// ```
 	#[inline]
 	pub fn expect(&self, msg: &str) -> bool {
-		match self {
-			&SomeTrue => true,
-			&SomeFalse => false,
-			&None => panic!("{}", msg)
+		match *self {
+			SomeTrue => true,
+			SomeFalse => false,
+			None => panic!("{}", msg)
 		}
 	}
-	
+
 	/// Unwraps the contained bool, panics on None.
 	///
 	/// # Panics
@@ -221,7 +221,7 @@ impl OptionBool {
 	/// if self is None
 	///
 	/// # Examples
-	/// 
+	///
 	/// For SomeTrue/SomeFalse, the corresponding bool is returned.
 	///
 	/// ```
@@ -229,7 +229,7 @@ impl OptionBool {
 	/// assert!(OptionBool::SomeTrue.unwrap());
 	/// assert!(!OptionBool::SomeFalse.unwrap());
 	/// ```
-	/// 
+	///
 	/// On None, it panics with "unwrap called on None"
 	///
 	/// ```should_panic
@@ -240,7 +240,7 @@ impl OptionBool {
 	pub fn unwrap(&self) -> bool {
 		self.expect("unwrap called on None")
 	}
-	
+
 	/// Returns the contained bool or a default.
     ///
     /// # Examples
@@ -254,13 +254,13 @@ impl OptionBool {
     /// ```
 	#[inline]
 	pub fn unwrap_or(&self, def: bool) -> bool {
-		match self {
-			&SomeTrue => true,
-			&SomeFalse => false,
-			&None => def,
+		match *self {
+			SomeTrue => true,
+			SomeFalse => false,
+			None => def,
 		}
 	}
-	
+
 	/// Returns the contained bool or a computed default.
     ///
     /// # Examples
@@ -279,7 +279,7 @@ impl OptionBool {
 			None => f(),
 		}
 	}
-	
+
 	/// Maps an `OptionBool` to an `Option<U>` by applying the function
 	/// over the contained bool.
 	///
@@ -293,7 +293,7 @@ impl OptionBool {
 	///     |b| if b { "Yes" } else { "No" }));
 	/// ```
 	#[inline]
-	pub fn map<U, F>(self, f: F) -> Option<U> 
+	pub fn map<U, F>(self, f: F) -> Option<U>
 	where F: FnOnce(bool) -> U {
 		match self {
 			SomeTrue => Option::Some(f(true)),
@@ -301,7 +301,7 @@ impl OptionBool {
 			None => Option::None,
 		}
 	}
-	
+
 	/// Maps an `OptionBool` to another `OptionBool` by applying the
 	/// function over the contained bool.
 	///
@@ -311,22 +311,22 @@ impl OptionBool {
 	///
 	/// ```
 	///# use optional::OptionBool;
-	/// assert_eq!(OptionBool::SomeTrue, 
+	/// assert_eq!(OptionBool::SomeTrue,
 	///     OptionBool::SomeFalse.map_bool(|b| !b));
 	/// ```
 	#[inline]
 	pub fn map_bool<F>(self, f: F) -> OptionBool
 	where F: FnOnce(bool) -> bool {
 		match self {
-			SomeTrue => if f(true) { 
+			SomeTrue => if f(true) {
 				SomeTrue } else { SomeFalse },
-			SomeFalse => if f(false) { 
+			SomeFalse => if f(false) {
 				SomeTrue } else { SomeFalse },
 			None => None,
 		}
 	}
-	
-	/// Maps a value to a `U` by applying the function or return a 
+
+	/// Maps a value to a `U` by applying the function or return a
 	/// default `U`.
 	///
 	/// # Examples
@@ -335,11 +335,11 @@ impl OptionBool {
 	///
 	/// ```
 	///# use optional::OptionBool;
-	/// assert_eq!("True", OptionBool::SomeTrue.map_or("FileNotFound", 
+	/// assert_eq!("True", OptionBool::SomeTrue.map_or("FileNotFound",
 	///     |b| if b { "True" } else { "False" }));
 	/// ```
 	#[inline]
-	pub fn map_or<U, F>(self, default: U, f: F) -> U 
+	pub fn map_or<U, F>(self, default: U, f: F) -> U
 	where F: FnOnce(bool) -> U {
 		match self {
 			SomeTrue => f(true),
@@ -347,19 +347,19 @@ impl OptionBool {
 			None => default,
 		}
 	}
-	
-	/// Maps a value to a `U` by applying the function or return a 
+
+	/// Maps a value to a `U` by applying the function or return a
 	/// computed default.
 	///
 	/// # Examples
 	///
 	/// ```
 	///# use optional::OptionBool;
-	/// assert_eq!("True", OptionBool::SomeTrue.map_or_else(|| "FileNotFound", 
+	/// assert_eq!("True", OptionBool::SomeTrue.map_or_else(|| "FileNotFound",
 	///     |b| if b { "True" } else { "False" }));
 	/// ```
 	#[inline]
-	pub fn map_or_else<U, D, F>(self, default: D, f: F) -> U 
+	pub fn map_or_else<U, D, F>(self, default: D, f: F) -> U
 	where D: FnOnce() -> U, F: FnOnce(bool) -> U {
 		match self {
 			SomeTrue => f(true),
@@ -367,8 +367,8 @@ impl OptionBool {
 			None => default(),
 		}
 	}
-	
-	/// Transforms the `OptionBool` into a `Result<bool, E>`, mapping 
+
+	/// Transforms the `OptionBool` into a `Result<bool, E>`, mapping
 	/// `Some`X to `Ok(`X`)` and `None` to `Err(err)`.
     ///
     /// # Examples
@@ -386,7 +386,7 @@ impl OptionBool {
 			None => Err(err),
 		}
 	}
-	
+
 	/// Transforms the `OptionBool` into a `Result<bool, E>`, mapping `Some`X to
     /// `Ok(`X`)` and `None` to a calculated `Err(err)`.
     ///
@@ -398,7 +398,7 @@ impl OptionBool {
     /// assert_eq!(OptionBool::None.ok_or_else(|| "Ouch"), Err("Ouch"));
     /// ```
 	#[inline]
-	pub fn ok_or_else<E, F>(self, err: F) -> Result<bool, E> 
+	pub fn ok_or_else<E, F>(self, err: F) -> Result<bool, E>
 	where F: FnOnce() -> E {
 		match self {
 			SomeTrue => Ok(true),
@@ -406,7 +406,7 @@ impl OptionBool {
 			None => Err(err()),
 		}
 	}
-	
+
 	/// Returns `None` if the option is `None`, otherwise returns `optb`.
 	///
 	/// # Examples
@@ -425,7 +425,7 @@ impl OptionBool {
 			None => Option::None,
 		}
 	}
-	
+
 	/// Returns `None` if the option is `None`, otherwise returns `optb`.
 	///
 	/// # Examples
@@ -446,9 +446,9 @@ impl OptionBool {
 			_ => optb,
 		}
 	}
-	
+
 	#[inline]
-	pub fn and_then<U, F>(self, f: F) -> Option<U> 
+	pub fn and_then<U, F>(self, f: F) -> Option<U>
 	where F: FnOnce(bool) -> Option<U> {
 		match self {
 			SomeTrue => f(true),
@@ -456,9 +456,9 @@ impl OptionBool {
 			None => Option::None,
 		}
 	}
-	
+
 	#[inline]
-	pub fn and_then_bool<F>(self, f: F) -> OptionBool 
+	pub fn and_then_bool<F>(self, f: F) -> OptionBool
 	where F: FnOnce(bool) -> OptionBool {
 		match self {
 			SomeTrue => f(true),
@@ -466,7 +466,7 @@ impl OptionBool {
 			None => None,
 		}
 	}
-	
+
 	/// Returns this as Option unless this is `None`, in which case returns
 	/// `optb`.
 	///
@@ -486,7 +486,7 @@ impl OptionBool {
 			None => optb,
 		}
 	}
-	
+
 	/// Returns this as Option unless this is `None`, in which case returns
 	/// `optb`.
 	///
@@ -494,11 +494,11 @@ impl OptionBool {
 	///
 	/// ```
 	///# use optional::OptionBool;
-	/// assert_eq!(OptionBool::SomeFalse, 
+	/// assert_eq!(OptionBool::SomeFalse,
 	///     OptionBool::SomeFalse.or_bool(OptionBool::SomeTrue));
-	/// assert_eq!(OptionBool::SomeTrue, 
+	/// assert_eq!(OptionBool::SomeTrue,
 	///     OptionBool::None.or_bool(OptionBool::SomeTrue));
-	/// assert_eq!(OptionBool::None, 
+	/// assert_eq!(OptionBool::None,
 	///     OptionBool::None.or_bool(OptionBool::None));
 	/// ```
 	#[inline]
@@ -508,7 +508,7 @@ impl OptionBool {
 			x => x,
 		}
 	}
-	
+
 	/// Returns this as Option unless this is `None`, in which case use the
 	/// supplied function to calculate the result.
 	///
@@ -521,7 +521,7 @@ impl OptionBool {
 	/// assert_eq!(None, OptionBool::None.or_else(|| None));
 	/// ```
 	#[inline]
-	pub fn or_else<F>(self, f: F) -> Option<bool> 
+	pub fn or_else<F>(self, f: F) -> Option<bool>
 	where F: FnOnce() -> Option<bool> {
 		match self {
 			SomeTrue => Option::Some(true),
@@ -529,7 +529,7 @@ impl OptionBool {
 			None => f(),
 		}
 	}
-	
+
 	/// Returns this as Option unless this is `None`, in which case use the
 	/// supplied function to calculate the result.
 	///
@@ -537,11 +537,11 @@ impl OptionBool {
 	///
 	/// ```
 	///# use optional::OptionBool;
-	/// assert_eq!(OptionBool::SomeFalse, 
+	/// assert_eq!(OptionBool::SomeFalse,
 	///     OptionBool::SomeFalse.or_else_bool(|| OptionBool::SomeTrue));
-	/// assert_eq!(OptionBool::SomeTrue, 
+	/// assert_eq!(OptionBool::SomeTrue,
 	///     OptionBool::None.or_else_bool(|| OptionBool::SomeTrue));
-	/// assert_eq!(OptionBool::None, 
+	/// assert_eq!(OptionBool::None,
 	///     OptionBool::None.or_else_bool(|| OptionBool::None));
 	/// ```
 	#[inline]
@@ -552,7 +552,7 @@ impl OptionBool {
 			x => x,
 		}
 	}
-	
+
 	/// return an iterator over all contained (that is zero or one) values.
 	///
 	/// # Examples
@@ -566,7 +566,7 @@ impl OptionBool {
 	pub fn iter(&self) -> Iter<bool> {
 		self.as_slice().iter()
 	}
-	
+
 	/// return a possibly empty slice with the contained value, if any.
 	///
 	/// # Examples
@@ -584,8 +584,8 @@ impl OptionBool {
 			None => OB_EMPTY_SLICE_REF,
 		}
 	}
-	
-	/// Takes the value out of the `OptionBool` and returns ist as 
+
+	/// Takes the value out of the `OptionBool` and returns ist as
 	/// `Option<bool>`, changing self to `None`.
 	///
 	/// # Examples
@@ -600,7 +600,7 @@ impl OptionBool {
 	pub fn take(&mut self) -> Option<bool> {
 		self.take_bool().into()
 	}
-	
+
 	/// Takes the value out of the `OptionBool`, changing self to `None`.
 	///
 	/// # Examples
@@ -619,10 +619,10 @@ impl OptionBool {
 
 impl Debug for OptionBool {
 	fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), Error> {
-		write!(f, "{}", match self {
-			&SomeTrue => "Some(true)",
-			&SomeFalse => "Some(false)",
-			&None => "None",
+		write!(f, "{}", match *self {
+			SomeTrue => "Some(true)",
+			SomeFalse => "Some(false)",
+			None => "None",
 		})
 	}
 }
@@ -631,7 +631,7 @@ pub struct IterBool { o: OptionBool }
 
 impl Iterator for IterBool {
 	type Item = bool;
-	
+
 	#[inline]
 	fn next(&mut self) -> Option<bool> {
 		self.o.take()
@@ -653,7 +653,7 @@ impl Iterator for IterBool {
 impl IntoIterator for OptionBool {
 	type Item = bool;
 	type IntoIter = IterBool;
-	
+
 	 #[inline]
     fn into_iter(self) -> IterBool {
 		IterBool{ o: self }
@@ -680,10 +680,10 @@ impl From<OptionBool> for Option<bool> {
 impl<'a> From<&'a OptionBool> for Option<bool> {
 	#[inline]
 	fn from(o: &'a OptionBool) -> Option<bool> {
-		match o {
-			&SomeTrue => Option::Some(true),
-			&SomeFalse => Option::Some(false),
-			&None => Option::None,
+		match *o {
+			SomeTrue => Option::Some(true),
+			SomeFalse => Option::Some(false),
+			None => Option::None,
 		}
 	}
 }
@@ -702,15 +702,15 @@ impl From<Option<bool>> for OptionBool {
 impl<'a> From<&'a Option<bool>> for OptionBool {
 	#[inline]
 	fn from(o: &'a Option<bool>) -> Self {
-		match o {
-			&Option::Some(true) => SomeTrue,
-			&Option::Some(false) => SomeFalse,
-			&Option::None => None,
+		match *o {
+			Option::Some(true) => SomeTrue,
+			Option::Some(false) => SomeFalse,
+			Option::None => None,
 		}
 	}
 }
 
-/// A trait whose implementation for any type `T` allows the use of 
+/// A trait whose implementation for any type `T` allows the use of
 ///`Optioned<T>` where `T` is bound by both `Sized` and `Copy`.
 pub trait Noned: {
 	/// Returns `true` if the contained value is the declared `None` for `T`,
@@ -722,79 +722,79 @@ pub trait Noned: {
 
 impl Noned for u8 {
 	#[inline]
-	fn is_none(&self) -> bool { self == &std::u8::MAX } 
+	fn is_none(&self) -> bool { self == &std::u8::MAX }
 
 	#[inline]
 	fn get_none() -> u8 { std::u8::MAX }
 }
 
-impl Noned for u16 { 
+impl Noned for u16 {
 	#[inline]
-	fn is_none(&self) -> bool { self == &std::u16::MAX } 
+	fn is_none(&self) -> bool { self == &std::u16::MAX }
 
 	#[inline]
 	fn get_none() -> u16 { std::u16::MAX }
 }
 
-impl Noned for u32 { 
+impl Noned for u32 {
 	#[inline]
-	fn is_none(&self) -> bool { self == &std::u32::MAX } 
+	fn is_none(&self) -> bool { self == &std::u32::MAX }
 
 	#[inline]
 	fn get_none() -> u32 { std::u32::MAX }
 }
 
-impl Noned for u64 { 
+impl Noned for u64 {
 	#[inline]
-	fn is_none(&self) -> bool { self == &std::u64::MAX } 
+	fn is_none(&self) -> bool { self == &std::u64::MAX }
 
 	#[inline]
 	fn get_none() -> u64 { std::u64::MAX }
 }
 
-impl Noned for usize { 
+impl Noned for usize {
 	#[inline]
-	fn is_none(&self) -> bool { self == &std::usize::MAX } 
+	fn is_none(&self) -> bool { self == &std::usize::MAX }
 
 	#[inline]
 	fn get_none() -> usize { std::usize::MAX }
 }
 
-impl Noned for i8 { 
+impl Noned for i8 {
 	#[inline]
-	fn is_none(&self) -> bool { self == &std::i8::MIN } 
+	fn is_none(&self) -> bool { self == &std::i8::MIN }
 
 	#[inline]
 	fn get_none() -> i8 { std::i8::MIN }
 }
 
-impl Noned for i16 { 
+impl Noned for i16 {
 	#[inline]
-	fn is_none(&self) -> bool { self == &std::i16::MIN } 
+	fn is_none(&self) -> bool { self == &std::i16::MIN }
 
 	#[inline]
 	fn get_none() -> i16 { std::i16::MIN }
 }
 
-impl Noned for i32 { 
+impl Noned for i32 {
 	#[inline]
-	fn is_none(&self) -> bool { self == &std::i32::MIN } 
+	fn is_none(&self) -> bool { self == &std::i32::MIN }
 
 	#[inline]
 	fn get_none() -> i32 { std::i32::MIN }
 }
 
-impl Noned for i64 { 
+impl Noned for i64 {
 	#[inline]
-	fn is_none(&self) -> bool { self == &std::i64::MIN } 
+	fn is_none(&self) -> bool { self == &std::i64::MIN }
 
 	#[inline]
 	fn get_none() -> i64 { std::i64::MIN }
 }
 
-impl Noned for isize { 
+impl Noned for isize {
 	#[inline]
-	fn is_none(&self) -> bool { self == &std::isize::MIN } 
+	fn is_none(&self) -> bool { self == &std::isize::MIN }
 
 	#[inline]
 	fn get_none() -> isize { std::isize::MIN }
@@ -834,14 +834,14 @@ impl OptEq for i32 { fn opt_eq(&self, other: &Self) -> bool { self == other } }
 impl OptEq for i64 { fn opt_eq(&self, other: &Self) -> bool { self == other } }
 impl OptEq for isize { fn opt_eq(&self, other: &Self) -> bool { self == other } }
 
-impl OptEq for f32 { 
-	fn opt_eq(&self, other: &Self) -> bool { 
-		if self.is_nan() { other.is_nan() } else { self == other } 
+impl OptEq for f32 {
+	fn opt_eq(&self, other: &Self) -> bool {
+		if self.is_nan() { other.is_nan() } else { self == other }
 	}
 }
-impl OptEq for f64 { 
-	fn opt_eq(&self, other: &Self) -> bool { 
-		if self.is_nan() { other.is_nan() } else { self == other } 
+impl OptEq for f64 {
+	fn opt_eq(&self, other: &Self) -> bool {
+		if self.is_nan() { other.is_nan() } else { self == other }
 	}
 }
 
@@ -910,7 +910,7 @@ impl OptOrd for f64 {
 
 
 /// An `Option<T>`-like structure that takes only as much space as the enclosed
-/// value, at the cost of removing one particular `None` value from the value 
+/// value, at the cost of removing one particular `None` value from the value
 /// domain (see `Noned`)
 #[derive(Copy, Clone)]
 pub struct Optioned<T: Noned + Copy> { value: T }
@@ -918,7 +918,7 @@ pub struct Optioned<T: Noned + Copy> { value: T }
 /// Equality works as usual.
 ///
 /// # Examples
-/// 
+///
 /// ```
 ///# use ::optional::{some, none};
 /// assert_eq!(some(1u8), some(1u8));
@@ -962,7 +962,7 @@ impl<T: Noned + Copy> Optioned<T> {
 	/// panics if the supplied value is the None value
 	///
 	/// # Examples
-	/// 
+	///
 	/// ```
 	///# use ::optional::Optioned;
 	/// Optioned::<i32>::some(1); // Optioned(1)
@@ -977,11 +977,11 @@ impl<T: Noned + Copy> Optioned<T> {
 		assert!(!t.is_none());
 		Optioned::<T>{ value: t }
 	}
-	
+
 	/// Create an `Optioned<T>` that is `none()`.
 	///
 	/// # Examples
-	/// 
+	///
 	/// ```
 	///# use ::optional::Optioned;
 	/// Optioned::<u16>::none(); // Optioned(std::u16::MAX)
@@ -990,24 +990,24 @@ impl<T: Noned + Copy> Optioned<T> {
 	pub fn none() -> Self {
 		Optioned::<T>{ value: <T as Noned>::get_none() }
 	}
-	
+
 	#[inline]
 	fn as_option(&self) -> Option<T> {
 		if self.value.is_none() { Option::None } else { Option::Some(self.value) }
 	}
-	
+
 	/// Returns `true` if this `Optioned` is `None`, `false` otherwise.
 	#[inline]
 	pub fn is_none(&self) -> bool {
 		self.value.is_none()
 	}
-	
+
 	/// Returns `true` if this `Optioned` contains a value, `false` otherwise.
 	#[inline]
 	pub fn is_some(&self) -> bool {
 		!self.value.is_none()
 	}
-	
+
 	/// Unwraps the value, if any, else panics with the given message.
 	///
 	/// # Panics
@@ -1015,14 +1015,14 @@ impl<T: Noned + Copy> Optioned<T> {
 	/// if self is None
 	///
 	/// # Examples
-	/// 
+	///
 	/// For Some(_), the corresponding value is returned.
 	///
 	/// ```
 	///# use optional::Optioned;
 	/// assert_eq!(42u8, Optioned::some(42u8).expect("FAIL"));
 	/// ```
-	/// 
+	///
 	/// On None, it panics with the given message.
 	///
 	/// ```should_panic
@@ -1034,7 +1034,7 @@ impl<T: Noned + Copy> Optioned<T> {
 		if self.is_none() { panic!("{}", msg) }
 		self.value
 	}
-	
+
 	/// Unwraps the value, if any, else panics with "unwrap called on None".
 	///
 	/// # Panics
@@ -1042,14 +1042,14 @@ impl<T: Noned + Copy> Optioned<T> {
 	/// if self is `None`
 	///
 	/// # Examples
-	/// 
+	///
 	/// For `Some(_)`, the corresponding value is returned.
 	///
 	/// ```
 	///# use optional::Optioned;
 	/// assert_eq!(42u8, Optioned::some(42u8).unwrap());
 	/// ```
-	/// 
+	///
 	/// On `None`, it panics with the given message.
 	///
 	/// ```should_panic
@@ -1060,7 +1060,7 @@ impl<T: Noned + Copy> Optioned<T> {
 	pub fn unwrap(&self) -> T {
 		self.expect("unwrap called on None")
 	}
-	
+
 	/// Returns the contained value, even if None.
 	///
 	/// # Examples
@@ -1074,7 +1074,7 @@ impl<T: Noned + Copy> Optioned<T> {
 	pub fn unpack(&self) -> T {
 		self.value
 	}
-	
+
 	/// Returns the contained value or a default.
     ///
     /// # Examples
@@ -1088,7 +1088,7 @@ impl<T: Noned + Copy> Optioned<T> {
 	pub fn unwrap_or(&self, def: T) -> T {
 		if self.is_none() { def } else { self.value }
 	}
-	
+
 	/// Returns the contained value or a calculated default.
     ///
     /// # Examples
@@ -1102,7 +1102,7 @@ impl<T: Noned + Copy> Optioned<T> {
 	pub fn unwrap_or_else<F>(self, f: F) -> T where F: FnOnce() -> T {
 		if self.is_none() { f() } else { self.value }
 	}
-	
+
 	/// Maps the `Optioned` to an `Option<U>` by applying the function over the
 	/// contained value, if any.
 	///
@@ -1117,7 +1117,7 @@ impl<T: Noned + Copy> Optioned<T> {
 	where F: FnOnce(T) -> U {
 		if self.is_none() { Option::None } else { Option::Some(f(self.value)) }
 	}
-	
+
 	/// Maps the `Optioned<T>` to an `Optioned<U>` by applying the function over
 	/// the contained value, if any. Requires that the result type of the
 	/// function be `Noned + Copy`, as other types aren't compatible with
@@ -1134,8 +1134,8 @@ impl<T: Noned + Copy> Optioned<T> {
 	where F: FnOnce(T) -> U, U: Noned + Copy {
 		if self.is_none() { none() } else { some(f(self.value)) }
 	}
-	
-	/// Maps the contained value to a `U` by applying the function or return a 
+
+	/// Maps the contained value to a `U` by applying the function or return a
 	/// default.
 	///
 	/// # Examples
@@ -1148,8 +1148,8 @@ impl<T: Noned + Copy> Optioned<T> {
 	pub fn map_or<U, F>(self, default: U, f: F) -> U where F: FnOnce(T) -> U {
 		if self.is_none() { default } else { f(self.value) }
 	}
-	
-	/// Maps a value to a `U` by applying the function or return a computed 
+
+	/// Maps a value to a `U` by applying the function or return a computed
 	/// default.
 	///
 	/// # Examples
@@ -1160,12 +1160,12 @@ impl<T: Noned + Copy> Optioned<T> {
 	///     || "Unknown", |b| b.into()));
 	/// ```
 	#[inline]
-	pub fn map_or_else<U, D, F>(self, default: D, f: F) -> U 
+	pub fn map_or_else<U, D, F>(self, default: D, f: F) -> U
 	where D: FnOnce() -> U, F: FnOnce(T) -> U {
 		if self.is_none() { default() } else { f(self.value) }
 	}
-	
-	/// Takes the value out of the `Optioned` and returns ist as 
+
+	/// Takes the value out of the `Optioned` and returns ist as
 	/// `Option<T>`, changing self to `None`.
 	///
 	/// # Examples
@@ -1180,7 +1180,7 @@ impl<T: Noned + Copy> Optioned<T> {
 	pub fn take(&mut self) -> Option<T> {
 		mem::replace(self, Self::none()).as_option()
 	}
-	
+
 	/// Return a possibly empty slice over the contained value, if any.
 	///
 	/// # Examples
@@ -1190,13 +1190,13 @@ impl<T: Noned + Copy> Optioned<T> {
 	/// assert!(none::<i16>().as_slice().is_empty());
 	/// ```
 	#[inline]
-	pub fn as_slice<'a>(&'a self) -> &'a [T] {
+	pub fn as_slice(&self) -> &[T] {
 		unsafe {
-			std::slice::from_raw_parts(&self.value, 
+			std::slice::from_raw_parts(&self.value,
 				if self.is_none() { 0 } else { 1 })
 		}
 	}
-	
+
 	/// return an iterator over all contained (that is zero or one) values.
 	///
 	/// # Examples
@@ -1219,7 +1219,7 @@ impl<T: Noned + Copy> Optioned<T> {
 /// panics if the supplied value is the None value
 ///
 /// # Examples
-/// 
+///
 /// ```
 ///# use ::optional::some;
 /// some(1i32); // Optioned(1i32)
@@ -1246,7 +1246,7 @@ pub fn some<T: Noned + Copy>(value: T) -> Optioned<T> {
 /// ```
 pub fn none<T: Noned + Copy>() -> Optioned<T> {
 	Optioned::<T>::none()
-} 
+}
 
 /// Wrap a `T` into an `Optioned<T>`, regardless of its None-ness.
 ///
@@ -1283,7 +1283,7 @@ pub struct OptionedIter<T: Noned + Copy> { o: Optioned<T> }
 
 impl<T: Noned + Copy> Iterator for OptionedIter<T> {
 	type Item=T;
-	
+
 	#[inline]
 	fn next(&mut self) -> Option<T> {
 		self.o.take()
@@ -1312,7 +1312,7 @@ impl<T: Noned + Copy> Into<Option<T>> for Optioned<T> {
 #[test]
 fn into_option_bool() {
 	let optionals = [ OptionBool::some(true), OptionBool::some(false), OptionBool::none() ];
-	
+
 	for o in optionals.iter() {
 		let opt : Option<bool> = o.into();
 		let o2 : OptionBool = opt.into();
@@ -1324,13 +1324,13 @@ fn into_option_bool() {
 fn test_bool_map() {
 	let optionals =
 		[ OptionBool::SomeTrue, OptionBool::SomeFalse, OptionBool::None ];
-	
+
 	for o in optionals.iter() {
 		assert!(o == o.map_bool(|b| b));
 		let opt : Option<bool> = **o; // double deref for &
 		assert!(opt == o.map(|b| b));
 	}
-	
+
 	assert!(SomeTrue == SomeFalse.map_bool(|b| !b))
 }
 
@@ -1345,7 +1345,7 @@ fn deref_to_option() {
 fn optioned_is_some_or_none() {
 	let opt_u32 : Optioned<u32> = Optioned::some(32);
 	assert!(opt_u32.is_some());
-	
+
 	let opt_u32_none : Optioned<u32> = Optioned::none();
 	assert!(opt_u32_none.is_none());
 }
