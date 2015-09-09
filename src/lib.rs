@@ -283,6 +283,9 @@ impl OptionBool {
 	/// Maps an `OptionBool` to an `Option<U>` by applying the function
 	/// over the contained bool.
 	///
+	/// Note that there is also [`map_bool(..)`](#method.map_bool) which works
+	/// similarly, but returns another `OptionBool`.
+	///
 	/// # Examples
 	///
 	/// Convert the contained bool to a Yes/No message
@@ -304,6 +307,9 @@ impl OptionBool {
 
 	/// Maps an `OptionBool` to another `OptionBool` by applying the
 	/// function over the contained bool.
+	///
+	/// Note that there is also [`map(..)`](#method.map) which works
+	/// similarly, but returns an `Option<bool>`.
 	///
 	/// # Examples
 	///
@@ -447,6 +453,19 @@ impl OptionBool {
 		}
 	}
 
+	/// returns `None` if the `OptionBool` is `None`, otherwise calls `f` with
+	/// the boolean value and returns the result as an `Option<U>`
+	///
+	/// Note that there is also [`and_then_bool(..)`](#method.and_then_bool)
+	/// which works similarly, but returns another `OptionBool`.
+	///
+	/// # Examples
+	///
+	/// ```
+	///# use optional::OptionBool;
+	/// assert_eq!(None, OptionBool::SomeFalse.and_then(
+	/// 	|x| if x { Some(true) } else { None }));
+	/// ```
 	#[inline]
 	pub fn and_then<U, F>(self, f: F) -> Option<U>
 	where F: FnOnce(bool) -> Option<U> {
@@ -457,6 +476,19 @@ impl OptionBool {
 		}
 	}
 
+	/// returns `None` if the `OptionBool` is `None`, otherwise calls `f` with
+	/// the boolean value and returns the result as an `OptionBool`
+	///
+	/// Note that there is also [`and_then(..)`](#method.and_then) which works
+	/// similarly, but returns an `Option<bool>`.
+	///
+	/// # Examples
+	///
+	/// ```
+	///# use optional::OptionBool;
+	/// assert_eq!(OptionBool::None, OptionBool::SomeFalse.and_then_bool(
+	/// 	|x| if x { OptionBool::SomeTrue } else { OptionBool::None }));
+	/// ```
 	#[inline]
 	pub fn and_then_bool<F>(self, f: F) -> OptionBool
 	where F: FnOnce(bool) -> OptionBool {
@@ -512,6 +544,9 @@ impl OptionBool {
 	/// Returns this as Option unless this is `None`, in which case use the
 	/// supplied function to calculate the result.
 	///
+	/// Note that there is also [`or_else_bool(..)`](#method.or_else_bool)
+	/// which works similarly, but returns another `OptionBool`.
+	///
 	/// # Examples
 	///
 	/// ```
@@ -532,6 +567,9 @@ impl OptionBool {
 
 	/// Returns this as Option unless this is `None`, in which case use the
 	/// supplied function to calculate the result.
+	///
+	/// Note that there is also [`or_else(..)`](#method.or_else) which works
+	/// similarly, but returns an `Option<bool>`.
 	///
 	/// # Examples
 	///
@@ -588,6 +626,9 @@ impl OptionBool {
 	/// Takes the value out of the `OptionBool` and returns ist as
 	/// `Option<bool>`, changing self to `None`.
 	///
+	/// Note that there is also [`take_bool(..)`](#method.take_bool) which
+	/// works similarly, but returns an `OptionBool`.
+	///
 	/// # Examples
 	///
 	/// ```
@@ -602,6 +643,9 @@ impl OptionBool {
 	}
 
 	/// Takes the value out of the `OptionBool`, changing self to `None`.
+	///
+	/// Note that there is also [`take(..)`](#method.take) which works
+	/// similarly, but returns an `Option<bool>`.
 	///
 	/// # Examples
 	///
