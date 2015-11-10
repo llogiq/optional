@@ -7,7 +7,7 @@ readme = "README.md"
 keywords = ["option", "data"]
 license = "MIT"
 repository = "https://github.com/llogiq/optional"
-documentation = "https://llogiq.github.io/optional/doc/optional/index.html"
+documentation = "https://llogiq.github.io/optional/optional/index.html"
 
 [lib]
 name = "optional"
