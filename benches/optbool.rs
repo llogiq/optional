@@ -1,4 +1,4 @@
-#![feature(test, as_slice)]
+#![feature(test)]
 
 extern crate test;
 extern crate optional;
@@ -341,7 +341,7 @@ fn bench_as_slice_iter_opt(bench: &mut test::Bencher) {
 	fn as_slice_iter_opt() {
 		for o in [OptionBool::SomeTrue, OptionBool::SomeFalse, OptionBool::None]
 				.iter().cycle().take(1200) {
-			for b in o.as_slice().iter() { test::black_box(b); }
+			for b in o[..].iter() { test::black_box(b); }
 		}
 	}
 	
@@ -365,7 +365,7 @@ fn bench_as_slice_opt(bench: &mut test::Bencher) {
 	fn as_slice_opt() {
 		for o in [OptionBool::SomeTrue, OptionBool::SomeFalse, OptionBool::None]
 				.iter().cycle().take(1200) {
-			test::black_box(o.as_slice());
+			test::black_box(o[..]);
 		}
 	}
 	
@@ -377,7 +377,7 @@ fn bench_as_slice_std(bench: &mut test::Bencher) {
 	fn or_else_std() {
 		for o in [Option::Some(true), Option::Some(false), Option::None]
 				.iter().cycle().take(1200) {
-			test::black_box(o.as_slice());
+			test::black_box(o[..]));
 		}
 	}
 	
