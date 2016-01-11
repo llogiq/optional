@@ -5,7 +5,7 @@ authors = ["Andre Bogus <bogusandre@gmail.com>"]
 description = "This crate supplies a number of Option-like primitive types"
 readme = "README.md"
 keywords = ["option", "data"]
-license = "MIT"
+license = "MIT OR Apache-2.0"
 repository = "https://github.com/llogiq/optional"
 documentation = "https://llogiq.github.io/optional/optional/index.html"
 
