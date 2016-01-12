@@ -365,25 +365,12 @@ fn bench_as_slice_opt(bench: &mut test::Bencher) {
 	fn as_slice_opt() {
 		for o in [OptionBool::SomeTrue, OptionBool::SomeFalse, OptionBool::None]
 				.iter().cycle().take(1200) {
-			test::black_box(o[..]);
+			test::black_box(o);
 		}
 	}
 	
 	bench.iter(as_slice_opt);
 }
-
-#[bench]
-fn bench_as_slice_std(bench: &mut test::Bencher) {
-	fn or_else_std() {
-		for o in [Option::Some(true), Option::Some(false), Option::None]
-				.iter().cycle().take(1200) {
-			test::black_box(o[..]));
-		}
-	}
-	
-	bench.iter(or_else_std);
-}
-
 
 #[bench]
 fn bench_from_opt(bench: &mut test::Bencher) {
