@@ -39,6 +39,8 @@
 //! Using Optioned for your own types is as simple as implementing `Noned` for
 //! your type, provided that your type is already Copy and Sized.
 
+#![deny(missing_docs)]
+
 use std::slice::Iter;
 use std::cmp::Ordering;
 use std::convert::From;
@@ -685,6 +687,7 @@ impl Debug for OptionBool {
     }
 }
 
+///iterate over an OptionBool
 pub struct IterBool { o: OptionBool }
 
 impl Iterator for IterBool {
@@ -876,6 +879,7 @@ impl Noned for f64 {
 
 ///Equality within Optioned
 pub trait OptEq {
+    /// Is the other optioned equal to this one?
     #[inline]
     fn opt_eq(&self, other: &Self) -> bool;
 }
@@ -905,6 +909,7 @@ impl OptEq for f64 {
 
 ///Ordering within Optioned
 pub trait OptOrd {
+    /// compare this Optioned with another
     #[inline]
     fn opt_cmp(&self, other: &Self) -> Ordering;
 }
@@ -1336,6 +1341,7 @@ impl<T: Noned + Copy> Default for Optioned<T> {
     }
 }
 
+/// iterate over an Optioned<T>
 #[derive(Copy, Clone)]
 pub struct OptionedIter<T: Noned + Copy> { o: Optioned<T> }
 
