@@ -1,4 +1,14 @@
 [root]
 name = "optional"
 version = "0.0.12"
+dependencies = [
+ "bencher 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
+[[package]]
+name = "bencher"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[metadata]
+"checksum bencher 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "1938914a389928f8c2cc0aec747380e0b2b854094710e7d03f8eb3762aa7f7a2"

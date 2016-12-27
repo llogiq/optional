@@ -15,3 +15,14 @@ path = "src/lib.rs"
 
 [features]
 unstable = []
+
+[dev-dependencies]
+bencher = "0.1"
+
+[[bench]]
+name = "optbool"
+harness = false
+
+[[bench]]
+name = "optioned"
+harness = false
