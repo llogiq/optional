@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/llogiq/optional.svg)](https://travis-ci.org/llogiq/optional)
 [![Coverage Status](https://coveralls.io/repos/llogiq/optional/badge.svg?branch=master&service=github)](https://coveralls.io/github/llogiq/optional?branch=master)
 [![Current Version](http://meritbadge.herokuapp.com/optional)](https://crates.io/crates/optional)
-[![License: MIT/Apache](https://img.shields.io/crates/l/optional.svg)](#License)
+[![License: MIT/Apache](https://img.shields.io/crates/l/optional.svg)](#license)
 
 This package aims to offer some `Option<_>`-like values that allow a 
 space-optimized representation.
