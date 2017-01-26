@@ -4,7 +4,6 @@ extern crate optional;
 
 use optional::OptionBool;
 use std::convert::Into;
-use std::iter::Iterator;
 
 #[test]
 fn test_eq_ne() {
