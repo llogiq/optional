@@ -135,10 +135,10 @@ their `MAX` and for floats is `NAN` (regardless of sign).
 
 # Documentation
 
-[API documentation](http://llogiq.github.io/optional)
+[API documentation](https://docs.rs/optional)
 
 You also may want to have a look at the very well documented
-[Option type](http://doc.rust-lang.org/std/option/enum.Option.html), on which
+[Option type](https://doc.rust-lang.org/std/option/enum.Option.html), on which
 this crate is based.
 
 # License
