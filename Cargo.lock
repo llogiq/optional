@@ -1,6 +1,6 @@
 [root]
 name = "optional"
-version = "0.0.12"
+version = "0.1.0"
 dependencies = [
  "bencher 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]

@@ -1,6 +1,6 @@
 [package]
 name = "optional"
-version = "0.0.13"
+version = "0.1.0"
 authors = ["Andre Bogus <bogusandre@gmail.com>"]
 description = "This crate supplies a number of Option-like primitive types"
 readme = "README.md"
@@ -16,9 +16,6 @@ travis-ci = { repository = "llogiq/optional" }
 [lib]
 name = "optional"
 path = "src/lib.rs"
-
-[features]
-unstable = []
 
 [dev-dependencies]
 bencher = "0.1"
