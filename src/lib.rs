@@ -41,6 +41,10 @@
 
 #![deny(missing_docs)]
 
+#[cfg(feature = "serde")]
+#[macro_use]
+extern crate serde_derive;
+
 use std::slice::Iter;
 use std::cmp::Ordering;
 use std::convert::From;
@@ -53,6 +57,7 @@ use self::OptionBool::*;
 
 /// The `OptionBool` type, a space-efficient Option<bool> replacement
 #[derive(Copy, Clone, Eq, Ord, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum OptionBool {
     /// Some(true)
     SomeTrue,
@@ -122,7 +127,7 @@ impl Index<RangeFull> for OptionBool {
             SomeTrue => OB_TRUE_SLICE_REF,
             SomeFalse => OB_FALSE_SLICE_REF,
             None => OB_EMPTY_SLICE_REF,
-        }        
+        }
     }
 }
 
@@ -976,6 +981,7 @@ impl OptOrd for f64 {
 /// value, at the cost of removing one particular `None` value from the value
 /// domain (see `Noned`)
 #[derive(Copy, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Optioned<T: Noned + Copy> { value: T }
 
 /// Equality works as usual.
