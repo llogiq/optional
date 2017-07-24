@@ -421,7 +421,8 @@ impl OptionBool {
     ///
     /// ```
     ///# use optional::OptionBool;
-    /// assert_eq!(OptionBool::SomeTrue.ok_or_else(|| panic!()), Ok(true));
+    ///# fn something_expensive() -> bool { unimplemented!(); }
+    /// assert_eq!(OptionBool::SomeTrue.ok_or_else(|| something_expensive()), Ok(true));
     /// assert_eq!(OptionBool::None.ok_or_else(|| "Ouch"), Err("Ouch"));
     /// ```
     #[inline]
