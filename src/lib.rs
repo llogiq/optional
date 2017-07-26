@@ -883,6 +883,16 @@ impl Noned for f64 {
     fn get_none() -> f64 { std::f64::NAN }
 }
 
+impl Noned for char {
+    #[inline]
+    fn is_none(&self) -> bool { *self as u32 == std::u32::MAX }
+    
+    #[inline]
+    // Because the value is never used as a char but only as a sentinel,
+    // this is safe and provides Optioned<char> with no loss in representation
+    fn get_none() -> char { unsafe { std::char::from_u32_unchecked(std::u32::MAX) } }
+}
+
 ///Equality within Optioned
 pub trait OptEq {
     /// Is the other optioned equal to this one?
@@ -912,6 +922,8 @@ impl OptEq for f64 {
         if self.is_nan() { other.is_nan() } else { self == other }
     }
 }
+
+impl OptEq for char { fn opt_eq(&self, other: &Self) -> bool { self == other } }
 
 ///Ordering within Optioned
 pub trait OptOrd {
@@ -975,6 +987,10 @@ impl OptOrd for f32 {
 }
 impl OptOrd for f64 {
     fn opt_cmp(&self, other: &Self) -> Ordering { _opt_cmp_part(self, other) }
+}
+
+impl OptOrd for char {
+    fn opt_cmp(&self, other: &Self) -> Ordering { _opt_cmp(self, other) }
 }
 
 
