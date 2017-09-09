@@ -42,8 +42,7 @@
 #![deny(missing_docs)]
 
 #[cfg(feature = "serde")]
-#[macro_use]
-extern crate serde_derive;
+extern crate serde;
 
 use std::slice::Iter;
 use std::cmp::Ordering;
@@ -56,8 +55,7 @@ use std::hash::{Hash, Hasher};
 use self::OptionBool::*;
 
 /// The `OptionBool` type, a space-efficient Option<bool> replacement
-#[derive(Copy, Clone, Eq, Ord, Hash)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Copy, Clone, PartialEq, Eq, Ord, Hash)]
 pub enum OptionBool {
     /// Some(true)
     SomeTrue,
@@ -93,18 +91,6 @@ impl Deref for OptionBool {
     }
 }
 
-impl PartialEq for OptionBool {
-    #[inline]
-    fn eq(&self, other: &OptionBool) -> bool {
-        match (self, other) {
-            (&SomeTrue, &SomeTrue) |
-            (&SomeFalse, &SomeFalse) |
-            (&None, &None) => true,
-            _ => false,
-        }
-    }
-}
-
 impl<'a> PartialEq<OptionBool> for &'a OptionBool {
     #[inline]
     fn eq(&self, other: &OptionBool) -> bool {
@@ -117,7 +103,7 @@ impl<'a> PartialEq<OptionBool> for &'a OptionBool {
     }
 }
 
-/// Index for RangeFull (to slice)
+/// Index for `RangeFull` (to slice)
 impl Index<RangeFull> for OptionBool {
     type Output = [bool];
 
@@ -148,13 +134,47 @@ impl PartialOrd for OptionBool {
     }
 }
 
-const OB_TRUE_SLICE : [bool; 1] = [true];
-const OB_FALSE_SLICE : [bool; 1] = [false];
-const OB_EMPTY_SLICE : [bool; 0] = [];
+static OB_TRUE_SLICE : [bool; 1] = [true];
+static OB_FALSE_SLICE : [bool; 1] = [false];
+static OB_EMPTY_SLICE : [bool; 0] = [];
 
-const OB_TRUE_SLICE_REF : &'static [bool] = &OB_TRUE_SLICE;
-const OB_FALSE_SLICE_REF : &'static [bool] = &OB_FALSE_SLICE;
-const OB_EMPTY_SLICE_REF : &'static [bool] = &OB_EMPTY_SLICE;
+static OB_TRUE_SLICE_REF : &'static [bool] = &OB_TRUE_SLICE;
+static OB_FALSE_SLICE_REF : &'static [bool] = &OB_FALSE_SLICE;
+static OB_EMPTY_SLICE_REF : &'static [bool] = &OB_EMPTY_SLICE;
+
+#[cfg(feature = "serde")]
+impl<'de> serde::Deserialize<'de> for OptionBool {
+    /// with `feature = "serde"`, (de)serialization support is active.
+    ///
+    /// ```rust
+    ///# extern crate serde_json;
+    ///# extern crate optional;
+    ///# use optional::OptionBool::SomeTrue;
+    ///# fn main() {
+    /// assert_eq!("true", serde_json::to_string(&SomeTrue).unwrap());
+    ///# }
+    /// ```
+    fn deserialize<D>(deserializer: D) -> Result<OptionBool, D::Error> where D: serde::Deserializer<'de> {
+        Option::<bool>::deserialize(deserializer).map(OptionBool::from)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl serde::Serialize for OptionBool {
+    /// with `feature = "serde"`, (de)serialization support is active.
+    ///
+    /// ```rust
+    ///# extern crate serde_json;
+    ///# extern crate optional;
+    ///# use optional::OptionBool::SomeTrue;
+    ///# fn main() {
+    /// assert_eq!(SomeTrue, serde_json::from_str("true").unwrap());
+    ///# }
+    /// ```
+   fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: serde::Serializer {
+       Option::<bool>::from(*self).serialize(serializer)
+   }
+}
 
 impl OptionBool {
     /// Create a SomeTrue for true, SomeFalse for false
@@ -186,7 +206,7 @@ impl OptionBool {
     /// ```
     #[inline]
     pub fn is_some(&self) -> bool {
-        if let &None = self { false } else { true }
+        if let OptionBool::None = *self { false } else { true }
     }
 
     /// Returns true if the option is a Some value.
@@ -201,7 +221,7 @@ impl OptionBool {
     /// ```
     #[inline]
     pub fn is_none(&self) -> bool {
-        if let &None = self { true } else { false }
+        if let OptionBool::None = *self { true } else { false }
     }
 
     /// Unwraps the contained bool, panics on None with given message.
@@ -693,7 +713,7 @@ impl Debug for OptionBool {
     }
 }
 
-///iterate over an OptionBool
+///iterate over an `OptionBool`
 pub struct IterBool { o: OptionBool }
 
 impl Iterator for IterBool {
@@ -705,7 +725,7 @@ impl Iterator for IterBool {
     }
 }
 
-/// IntoIterator works as expected
+/// `IntoIterator` works as expected
 ///
 /// # Examples
 ///
@@ -727,7 +747,7 @@ impl IntoIterator for OptionBool {
     }
 }
 
-/// OptionBool defaults to None.
+/// `OptionBool` defaults to `None`.
 impl Default for OptionBool {
     #[inline]
     fn default() -> OptionBool { None }
@@ -886,7 +906,7 @@ impl Noned for f64 {
 impl Noned for char {
     #[inline]
     fn is_none(&self) -> bool { *self as u32 == std::u32::MAX }
-    
+
     #[inline]
     // Because the value is never used as a char but only as a sentinel,
     // this is safe and provides Optioned<char> with no loss in representation
@@ -936,18 +956,14 @@ pub trait OptOrd {
 fn _opt_cmp<T: Ord + Copy + Noned>(a: &T, b: &T) -> Ordering {
     if a.is_none() {
         if b.is_none() { Ordering::Equal } else { Ordering::Less }
-    } else {
-        if b.is_none() { Ordering::Greater } else { a.cmp(b) }
-    }
+    } else if b.is_none() { Ordering::Greater } else { a.cmp(b) }
 }
 
 #[inline]
 fn _opt_cmp_part<T: PartialOrd + Copy + Noned>(a: &T, b: &T) -> Ordering {
     if a.is_none() {
         if b.is_none() { Ordering::Equal } else { Ordering::Less }
-    } else {
-        if b.is_none() { Ordering::Greater } else { a.partial_cmp(b).unwrap() }
-    }
+    } else if b.is_none() { Ordering::Greater } else { a.partial_cmp(b).unwrap() }
 }
 
 impl OptOrd for u8 {
@@ -998,7 +1014,6 @@ impl OptOrd for char {
 /// value, at the cost of removing one particular `None` value from the value
 /// domain (see `Noned`)
 #[derive(Copy, Clone)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Optioned<T: Noned + Copy> { value: T }
 
 /// Equality works as usual.
@@ -1038,6 +1053,40 @@ impl<T> Hash for Optioned<T> where T: Noned + Copy + Hash {
     fn hash<H>(&self, state: &mut H) where H: Hasher {
         self.value.hash(state)
     }
+}
+
+#[cfg(feature = "serde")]
+impl<'de, T> serde::Deserialize<'de> for Optioned<T> where T: Noned + Copy + serde::Deserialize<'de> {
+    /// with `feature = "serde"`, (de)serialization support is active.
+    ///
+    /// ```rust
+    ///# extern crate serde_json;
+    ///# extern crate optional;
+    ///# use optional::{Optioned, Noned, some};
+    ///# fn main() {
+    /// assert_eq!("1.0", serde_json::to_string(&some(1f32)).unwrap());
+    ///# }
+    /// ```
+    fn deserialize<D>(deserializer: D) -> Result<Optioned<T>, D::Error> where D: serde::Deserializer<'de> {
+        Option::<T>::deserialize(deserializer).map(Optioned::from)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<T> serde::Serialize for Optioned<T> where T: Noned + Copy + serde::Serialize {
+    /// with `feature = "serde"`, (de)serialization support is active.
+    ///
+    /// ```rust
+    ///# extern crate serde_json;
+    ///# extern crate optional;
+    ///# use optional::{Optioned, Noned, some};
+    ///# fn main() {
+    /// assert_eq!(some(1f32), serde_json::from_str("1.0").unwrap());
+    ///# }
+    /// ```
+   fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: serde::Serializer {
+       self.as_option().serialize(serializer)
+   }
 }
 
 impl<T: Noned + Copy> Optioned<T> {

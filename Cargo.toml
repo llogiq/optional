@@ -1,6 +1,6 @@
 [package]
 name = "optional"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Andre Bogus <bogusandre@gmail.com>"]
 description = "This crate supplies a number of Option-like primitive types"
 readme = "README.md"
@@ -21,10 +21,11 @@ path = "src/lib.rs"
 unstable = []
 
 [dependencies]
-serde_derive = { version = "1.0.8", optional = true }
+serde = { version = "1.0.12", optional = true }
 
 [dev-dependencies]
-bencher = "0.1"
+bencher = "0.1.4"
+serde_json = version = "1.0.3"
 
 [[bench]]
 name = "optbool"

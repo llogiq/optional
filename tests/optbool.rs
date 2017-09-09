@@ -1,4 +1,4 @@
-/// tests for OptionBool
+/// tests for `OptionBool`
 
 extern crate optional;
 
@@ -7,23 +7,23 @@ use std::convert::Into;
 
 #[test]
 fn test_eq_ne() {
-    assert!(OptionBool::SomeTrue == OptionBool::SomeTrue);
-    assert!(OptionBool::SomeFalse != OptionBool::SomeTrue);
-    assert!(OptionBool::None != OptionBool::SomeFalse);
-    
-    assert!(&OptionBool::SomeTrue != OptionBool::SomeFalse);
-    assert!(&OptionBool::None == OptionBool::None);
+    assert_eq!(OptionBool::SomeTrue, OptionBool::SomeTrue);
+    assert_ne!(OptionBool::SomeFalse, OptionBool::SomeTrue);
+    assert_ne!(OptionBool::None, OptionBool::SomeFalse);
+
+    assert_ne!(&OptionBool::SomeTrue, OptionBool::SomeFalse);
+    assert_eq!(&OptionBool::None, OptionBool::None);
 }
 
 #[test]
 fn into_option_bool() {
-    let optionals : [OptionBool; 3] = 
+    let optionals : [OptionBool; 3] =
         [ OptionBool::some(true), OptionBool::some(false), OptionBool::none() ];
 
-    for o in optionals.iter() {
+    for o in &optionals {
         let opt : Option<bool> = o.into();
         let o2 : OptionBool = opt.into();
-        assert!(o == o2);
+        assert_eq!(o, o2);
     }
 }
 
@@ -32,18 +32,18 @@ fn test_bool_map() {
     let optionals : [OptionBool; 3] =
         [ OptionBool::SomeTrue, OptionBool::SomeFalse, OptionBool::None ];
 
-    for o in optionals.iter() {
-        assert!(o == o.map_bool(|b| b));
+    for o in &optionals {
+        assert_eq!(o, o.map_bool(|b| b));
         let opt : Option<bool> = **o; // double deref for &
-        assert!(opt == o.map(|b| b));
+        assert_eq!(opt, o.map(|b| b));
     }
 
-    assert!(OptionBool::SomeTrue == OptionBool::SomeFalse.map_bool(|b| !b))
+    assert_eq!(OptionBool::SomeTrue, OptionBool::SomeFalse.map_bool(|b| !b))
 }
 
 #[test]
 fn deref_to_option() {
-    assert!(*OptionBool::some(true) == Option::Some(true));
-    assert!(*OptionBool::some(false) == Option::Some(false));
-    assert!(*OptionBool::none() == Option::None);
+    assert_eq!(*OptionBool::some(true), Option::Some(true));
+    assert_eq!(*OptionBool::some(false), Option::Some(false));
+    assert_eq!(*OptionBool::none(), Option::None);
 }
