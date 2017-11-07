@@ -905,12 +905,10 @@ impl Noned for f64 {
 
 impl Noned for char {
     #[inline]
-    fn is_none(&self) -> bool { *self as u32 == std::u32::MAX }
+    fn is_none(&self) -> bool { *self == '\0' }
 
     #[inline]
-    // Because the value is never used as a char but only as a sentinel,
-    // this is safe and provides Optioned<char> with no loss in representation
-    fn get_none() -> char { unsafe { std::char::from_u32_unchecked(std::u32::MAX) } }
+    fn get_none() -> char { '\0' }
 }
 
 ///Equality within Optioned
