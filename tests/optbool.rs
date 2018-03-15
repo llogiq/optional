@@ -1,5 +1,4 @@
 /// tests for `OptionBool`
-
 extern crate optional;
 
 use optional::OptionBool;
@@ -17,24 +16,30 @@ fn test_eq_ne() {
 
 #[test]
 fn into_option_bool() {
-    let optionals : [OptionBool; 3] =
-        [ OptionBool::some(true), OptionBool::some(false), OptionBool::none() ];
+    let optionals: [OptionBool; 3] = [
+        OptionBool::some(true),
+        OptionBool::some(false),
+        OptionBool::none(),
+    ];
 
     for o in &optionals {
-        let opt : Option<bool> = o.into();
-        let o2 : OptionBool = opt.into();
+        let opt: Option<bool> = o.into();
+        let o2: OptionBool = opt.into();
         assert_eq!(o, o2);
     }
 }
 
 #[test]
 fn test_bool_map() {
-    let optionals : [OptionBool; 3] =
-        [ OptionBool::SomeTrue, OptionBool::SomeFalse, OptionBool::None ];
+    let optionals: [OptionBool; 3] = [
+        OptionBool::SomeTrue,
+        OptionBool::SomeFalse,
+        OptionBool::None,
+    ];
 
     for o in &optionals {
         assert_eq!(o, o.map_bool(|b| b));
-        let opt : Option<bool> = **o; // double deref for &
+        let opt: Option<bool> = **o; // double deref for &
         assert_eq!(opt, o.map(|b| b));
     }
 
