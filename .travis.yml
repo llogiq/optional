@@ -8,4 +8,4 @@ rust:
 - nightly
 - beta
 script:
-  cargo test && cargo bench
+  cargo test --features=serde && cargo bench --features=serde
