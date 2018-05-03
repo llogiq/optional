@@ -1589,6 +1589,65 @@ impl<T: Noned + Copy> Optioned<T> {
         }
     }
 
+    /// Returns this option if it contains a value, otherwise returns the other.
+    ///
+    /// Arguments passed to `or` are eagerly evaluated;
+    /// if you are passing the result of a function call,
+    /// it is recommended to use `or_else`, which is lazily evaluated.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use optional::{Optioned, some, none};
+    /// let x = some(2);
+    /// let y = none();
+    /// assert_eq!(x.or(y), some(2));
+    ///
+    /// let x = none();
+    /// let y = some(100);
+    /// assert_eq!(x.or(y), some(100));
+    ///
+    /// let x = some(2);
+    /// let y = some(100);
+    /// assert_eq!(x.or(y), some(2));
+    ///
+    /// let x: Optioned<u32> = none();
+    /// let y = none();
+    /// assert_eq!(x.or(y), none());
+    /// ```
+    #[inline]
+    pub fn or(self, other: Optioned<T>) -> Optioned<T> {
+        if self.is_some() {
+            self
+        } else {
+            other
+        }
+    }
+
+    /// Returns this option if it contains a value, otherwise calls `f` and returns the result.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use optional::{Optioned, some, none};
+    /// fn nothing() -> Optioned<u32> { none() }
+    /// fn something() -> Optioned<u32> { some(1) }
+    ///
+    /// assert_eq!(some(2).or_else(something), some(2));
+    /// assert_eq!(none().or_else(something), some(1));
+    /// assert_eq!(none().or_else(nothing), none());
+    /// ```
+    pub fn or_else<F>(self, f: F) -> Optioned<T>
+    where
+        F: FnOnce() -> Optioned<T>,
+    {
+        if self.is_some() {
+            self
+        } else {
+            f()
+        }
+    }
+
     /// Takes the value out of the `Optioned` and returns ist as
     /// `Option<T>`, changing self to `None`.
     ///
