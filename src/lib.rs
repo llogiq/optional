@@ -1793,3 +1793,10 @@ impl<T: Noned + Copy> Into<Option<T>> for Optioned<T> {
         self.as_option()
     }
 }
+
+impl<T: Noned + Copy> From<T> for Optioned<T> {
+    #[inline]
+    fn from(o: T) -> Optioned<T> {
+        wrap(o)
+    }
+}
