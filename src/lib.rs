@@ -1648,6 +1648,67 @@ impl<T: Noned + Copy> Optioned<T> {
         }
     }
 
+    /// Returns the `None` value for type `U` if this value or `other` contains their respective
+    /// `None` values. Otherwise returns the `other` `Optioned` struct. 
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use optional::{Optioned, some, none};
+    /// let the_other = some::<u32>(42);
+    ///
+    /// assert_eq!(some('a').and(the_other), some(42));
+    /// assert_eq!(none::<char>().and(the_other), none::<u32>());
+    /// assert_eq!(some('a').and(none::<u32>()), none::<u32>());
+    /// assert_eq!(none::<char>().and(none::<u32>()), none::<u32>());
+    /// ```
+    #[inline]
+    pub fn and<U>(self, other: Optioned<U>) -> Optioned<U>
+    where
+        U: Noned + Copy
+    {
+        if self.is_some() {
+           other
+        } else {
+            none::<U>()
+        }
+    }
+
+    /// Returns this `Optioned` if it contains the the `None` value, otherwise calls `f` with
+    /// the contained value and returns the result as an `Optioned<U>`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use optional::{Optioned, some, none, wrap};
+    /// fn nothing() -> Optioned<u32> { none() }
+    /// fn something() -> Optioned<u32> { some(1) }
+    /// fn add_two(val: u32) -> Optioned<u32> {
+    ///   wrap( val + 2)
+    /// }
+    /// 
+    /// fn failed_function(val: u32) -> Optioned<u32> {
+    ///   none()
+    /// }
+    ///
+    /// assert_eq!(some(2).and_then(add_two), some(4));
+    /// assert_eq!(none().and_then(add_two), none());
+    /// assert_eq!(some(2).and_then(failed_function), none());
+    /// assert_eq!(none().and_then(failed_function), none());
+    /// ```
+    #[inline]
+    pub fn and_then<F,U>(self, f: F) -> Optioned<U>
+    where
+        F: FnOnce(T) -> Optioned<U>,
+        U: Noned + Copy
+    {
+        if self.is_some() {
+            f(self.value)
+        } else {
+            none()
+        }
+    }
+
     /// Takes the value out of the `Optioned` and returns ist as
     /// `Option<T>`, changing self to `None`.
     ///
