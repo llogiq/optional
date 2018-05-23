@@ -1662,6 +1662,7 @@ impl<T: Noned + Copy> Optioned<T> {
     /// assert_eq!(some('a').and(none::<u32>()), none::<u32>());
     /// assert_eq!(none::<char>().and(none::<u32>()), none::<u32>());
     /// ```
+    #[inline]
     pub fn and<U>(self, other: Optioned<U>) -> Optioned<U>
     where
         U: Noned + Copy
@@ -1695,6 +1696,7 @@ impl<T: Noned + Copy> Optioned<T> {
     /// assert_eq!(some(2).and_then(failed_function), none());
     /// assert_eq!(none().and_then(failed_function), none());
     /// ```
+    #[inline]
     pub fn and_then<F,U>(self, f: F) -> Optioned<U>
     where
         F: FnOnce(T) -> Optioned<U>,
