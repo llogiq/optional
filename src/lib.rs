@@ -1709,6 +1709,52 @@ impl<T: Noned + Copy> Optioned<T> {
         }
     }
 
+    /// Transforms the `Optioned<T>` into a `Result<T, E>`, mapping `some(v)` to
+    /// `Ok(v)` and `none()` to `Err(err)`.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// # use optional::{Optioned, some, none};
+    /// 
+    /// let x = some(42u32);
+    /// assert_eq!(x.ok_or("was none"), Ok(42u32));
+    ///
+    /// let x: Optioned<u32> = none();
+    /// assert_eq!(x.ok_or("was none"), Err("was none"));
+    /// ```
+    #[inline]
+    pub fn ok_or<E>(self, err: E) -> Result<T, E> {
+        if self.is_some(){
+            Ok(self.value)
+        } else {
+            Err(err)
+        }
+    }
+
+    /// Transforms the `Optioned<T>` into a `Result<T, E>`, mapping `some(v)` to
+    /// `Ok(v)` and `none()` to `Err(err)`.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// # use optional::{Optioned, some, none};
+    /// 
+    /// let x = some(42u32);
+    /// assert_eq!(x.ok_or_else(|| "was none"), Ok(42u32));
+    ///
+    /// let x: Optioned<u32> = none();
+    /// assert_eq!(x.ok_or_else(|| "was none"), Err("was none"));
+    /// ```
+    #[inline]
+    pub fn ok_or_else<E, F: FnOnce() -> E>(self, err: F) -> Result<T, E> {
+        if self.is_some(){
+            Ok(self.value)
+        } else {
+            Err(err())
+        }
+    }
+
     /// Takes the value out of the `Optioned` and returns ist as
     /// `Option<T>`, changing self to `None`.
     ///
