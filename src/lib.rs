@@ -3,7 +3,9 @@
 // http://opensource.org/licenses/MIT>. This file may not be copied, modified,
 // or distributed except according to those terms.
 
-//! Space-efficient optional values
+//! # Space-efficient optional values
+//! 
+//! ## Booleans
 //!
 //! Type `OptionBool` represents an optional boolean value, similar to
 //! `Option<bool>`. Most function implementations are similar or equal.
@@ -14,15 +16,26 @@
 //!
 //! The `OptionBool` type is expected to require only 1 byte of storage:
 //!
-//! ```
+//! ```rust
 //! assert!(1 == std::mem::size_of::<optional::OptionBool>());
 //! ```
+//! However, since this crate was originally authored, [improvements in the
+//! compiler](https://users.rust-lang.org/t/list-of-fundamental-crates/17806/5?u=ryan)
+//! have built in this optimization for `Option<bool>` as well. The 
+//! `OptionBool` type remains however because it [may still perform faster in
+//! some bench marks](https://github.com/llogiq/optional/issues/33). 
+//! 
+//! ```rust
+//! assert!(1 == std::mem::size_of::<Option<bool>>());
+//! ```
 //!
+//! ## Any type can be optional
+//! 
 //! Then there is the `Optioned<T>` type which wraps a type `T` as an optional
 //! value of `T` where one particular value represents None. `Optioned<T>`
 //! requires the exact same space as T:
 //!
-//! ```
+//! ```rust
 //! assert!(std::mem::size_of::<optional::Optioned<i64>>() ==
 //!     std::mem::size_of::<i64>());
 //! assert!(std::mem::size_of::<optional::Optioned<f32>>() ==
@@ -38,6 +51,7 @@
 //!
 //! Using Optioned for your own types is as simple as implementing `Noned` for
 //! your type, provided that your type is already Copy and Sized.
+//! 
 
 #![deny(missing_docs)]
 
