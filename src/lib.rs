@@ -1901,6 +1901,13 @@ impl<T: Noned + Copy> Into<Option<T>> for Optioned<T> {
     }
 }
 
+impl<'a, T: Noned + Copy> Into<Option<T>> for &'a Optioned<T> {
+    #[inline]
+    fn into(self) -> Option<T> {
+        self.as_option()
+    }
+}
+
 impl<T: Noned + Copy> From<T> for Optioned<T> {
     #[inline]
     fn from(o: T) -> Optioned<T> {
