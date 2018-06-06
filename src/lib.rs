@@ -1311,11 +1311,13 @@ where
     where
         S: serde::Serializer,
     {
-        if self.value.is_none() {
+        let opt = if self.value.is_none() {
             Option::None
         } else {
             Option::Some(self.value)
-        }
+        };
+
+        opt.serialize(serializer)
     }
 }
 
