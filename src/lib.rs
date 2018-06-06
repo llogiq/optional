@@ -1370,8 +1370,31 @@ impl<T: Noned + Copy> Optioned<T> {
         }
     }
 
+    /// Convenience funtion to convert an `Optioned` into an `Option`.
+    /// 
+    /// Techinically this is possible with the `Into<Option<T>>` implementation in this crate. 
+    /// However, experience has shown that there are many cases where the compiler isn't able to 
+    /// infer the correct type for the generic parameter and issues an error. As a workaround you 
+    /// can use `Into::<Option<T>>::into(...)` or `.map(|inner| inner)` which will both work.
+    /// The first is verbose and the second makes the intention less clear, so this method is 
+    /// provided as a convenience.
+    /// 
+    /// ```rust
+    ///# use optional::some;
+    /// if let Some(val) = some(15).into_option() {
+    ///     println!("val = {}", val);
+    /// }
+    /// ```
+    /// 
+    /// The following example will fail to compile because of type inference.
+    /// ```compile_fail
+    /// # use optional::some;
+    /// if let Some(val) = some(15).into() {
+    ///     println!("val = {}", val);
+    /// }
+    /// ```
     #[inline]
-    fn as_option(&self) -> Option<T> {
+    pub fn into_option(self) -> Option<T> {
         if self.value.is_none() {
             Option::None
         } else {
@@ -1768,7 +1791,7 @@ impl<T: Noned + Copy> Optioned<T> {
     /// ```
     #[inline]
     pub fn take(&mut self) -> Option<T> {
-        mem::replace(self, Self::none()).as_option()
+        mem::replace(self, Self::none()).into_option()
     }
 
     /// Return a possibly empty slice over the contained value, if any.
@@ -1897,14 +1920,14 @@ impl<T: Noned + Copy> From<Option<T>> for Optioned<T> {
 impl<T: Noned + Copy> Into<Option<T>> for Optioned<T> {
     #[inline]
     fn into(self) -> Option<T> {
-        self.as_option()
+        self.into_option()
     }
 }
 
 impl<'a, T: Noned + Copy> Into<Option<T>> for &'a Optioned<T> {
     #[inline]
     fn into(self) -> Option<T> {
-        self.as_option()
+        self.into_option()
     }
 }
 
