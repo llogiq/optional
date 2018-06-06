@@ -1311,7 +1311,11 @@ where
     where
         S: serde::Serializer,
     {
-        self.as_option().serialize(serializer)
+        if self.value.is_none() {
+            Option::None
+        } else {
+            Option::Some(self.value)
+        }
     }
 }
 
