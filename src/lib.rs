@@ -4,7 +4,7 @@
 // or distributed except according to those terms.
 
 //! # Space-efficient optional values
-//! 
+//!
 //! ## Booleans
 //!
 //! Type `OptionBool` represents an optional boolean value, similar to
@@ -21,16 +21,16 @@
 //! ```
 //! However, since this crate was originally authored, [improvements in the
 //! compiler](https://users.rust-lang.org/t/list-of-fundamental-crates/17806/5?u=ryan)
-//! have built in this optimization for `Option<bool>` as well. The 
+//! have built in this optimization for `Option<bool>` as well. The
 //! `OptionBool` type remains however because it [may still perform faster in
-//! some bench marks](https://github.com/llogiq/optional/issues/33). 
-//! 
+//! some bench marks](https://github.com/llogiq/optional/issues/33).
+//!
 //! ```rust
 //! assert!(1 == std::mem::size_of::<Option<bool>>());
 //! ```
 //!
 //! ## Any type can be optional
-//! 
+//!
 //! Then there is the `Optioned<T>` type which wraps a type `T` as an optional
 //! value of `T` where one particular value represents None. `Optioned<T>`
 //! requires the exact same space as T:
@@ -51,9 +51,10 @@
 //!
 //! Using Optioned for your own types is as simple as implementing `Noned` for
 //! your type, provided that your type is already Copy and Sized.
-//! 
+//!
 
 #![deny(missing_docs)]
+#![deny(unsafe_code)]
 
 #[cfg(feature = "serde")]
 extern crate serde;
@@ -1335,22 +1336,6 @@ where
     }
 }
 
-mod slice_of_up_to_one {
-    /// Get a slice of zero or one elements from a ref to the single value and a bool whether
-    /// the value should be included
-    ///
-    /// note: This is safe because:
-    ///
-    /// ```rust
-    /// assert_eq!(0, false as usize); // empty slice
-    /// assert_eq!(1, true as usize); // slice of one element
-    /// ```
-    #[inline]
-    pub fn slice_of<T>(value: &T, one: bool) -> &[T] {
-        unsafe { ::std::slice::from_raw_parts(value, one as usize) }
-    }
-}
-
 impl<T: Noned + Copy> Optioned<T> {
     /// Create an `Optioned<T>` that is `some(t)`.
     ///
@@ -1391,21 +1376,21 @@ impl<T: Noned + Copy> Optioned<T> {
     }
 
     /// Convenience funtion to convert an `Optioned` into an `Option`.
-    /// 
-    /// Techinically this is possible with the `Into<Option<T>>` implementation in this crate. 
-    /// However, experience has shown that there are many cases where the compiler isn't able to 
-    /// infer the correct type for the generic parameter and issues an error. As a workaround you 
+    ///
+    /// Techinically this is possible with the `Into<Option<T>>` implementation in this crate.
+    /// However, experience has shown that there are many cases where the compiler isn't able to
+    /// infer the correct type for the generic parameter and issues an error. As a workaround you
     /// can use `Into::<Option<T>>::into(...)` or `.map(|inner| inner)` which will both work.
-    /// The first is verbose and the second makes the intention less clear, so this method is 
+    /// The first is verbose and the second makes the intention less clear, so this method is
     /// provided as a convenience.
-    /// 
+    ///
     /// ```rust
     ///# use optional::some;
     /// if let Some(val) = some(15).into_option() {
     ///     println!("val = {}", val);
     /// }
     /// ```
-    /// 
+    ///
     /// The following example will fail to compile because of type inference.
     /// ```compile_fail
     /// # use optional::some;
@@ -1692,7 +1677,7 @@ impl<T: Noned + Copy> Optioned<T> {
     }
 
     /// Returns the `None` value for type `U` if this value or `other` contains their respective
-    /// `None` values. Otherwise returns the `other` `Optioned` struct. 
+    /// `None` values. Otherwise returns the `other` `Optioned` struct.
     ///
     /// # Examples
     ///
@@ -1729,7 +1714,7 @@ impl<T: Noned + Copy> Optioned<T> {
     /// fn add_two(val: u32) -> Optioned<u32> {
     ///   wrap( val + 2)
     /// }
-    /// 
+    ///
     /// fn failed_function(val: u32) -> Optioned<u32> {
     ///   none()
     /// }
@@ -1759,7 +1744,7 @@ impl<T: Noned + Copy> Optioned<T> {
     ///
     /// ```rust
     /// # use optional::{Optioned, some, none};
-    /// 
+    ///
     /// let x = some(42u32);
     /// assert_eq!(x.ok_or("was none"), Ok(42u32));
     ///
@@ -1782,7 +1767,7 @@ impl<T: Noned + Copy> Optioned<T> {
     ///
     /// ```rust
     /// # use optional::{Optioned, some, none};
-    /// 
+    ///
     /// let x = some(42u32);
     /// assert_eq!(x.ok_or_else(|| "was none"), Ok(42u32));
     ///
@@ -1824,7 +1809,7 @@ impl<T: Noned + Copy> Optioned<T> {
     /// ```
     #[inline]
     pub fn as_slice(&self) -> &[T] {
-        slice_of_up_to_one::slice_of(&self.value, self.is_some())
+        &std::slice::from_ref(&self.value)[..self.is_some() as usize]
     }
 
     /// return an iterator over all contained (that is zero or one) values.
