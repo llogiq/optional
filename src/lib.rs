@@ -737,6 +737,29 @@ impl OptionBool {
         }
     }
 
+    /// Returns `Some*` if exactly one of self, optb is `Some*`, otherwise
+    /// returns None.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    ///# use optional::OptionBool;
+    /// assert!(OptionBool::None.xor(OptionBool::None).is_none());
+    /// assert_eq!(OptionBool::SomeTrue.xor(OptionBool::None),
+    ///            OptionBool::SomeTrue);
+    /// assert_eq!(OptionBool::None.xor(OptionBool::SomeFalse),
+    ///            OptionBool::SomeFalse);
+    /// assert!(OptionBool::SomeTrue.xor(OptionBool::SomeTrue).is_none())
+    /// ```
+    pub fn xor(self, optb: OptionBool) -> OptionBool {
+        if self.is_none() {
+            return optb;
+        } else if optb.is_none() {
+            return self;
+        }
+        None
+    }
+
     /// return an iterator over all contained (that is zero or one) values.
     ///
     /// # Examples
@@ -1717,6 +1740,27 @@ impl<T: Noned + Copy> Optioned<T> {
         } else {
             f()
         }
+    }
+
+    /// Returns `Some*` if exactly one of self, optb is `Some*`, otherwise
+    /// returns None.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    ///# use optional::{Optioned, none, some};
+    /// assert!(none::<u8>().xor(none()).is_none());
+    /// assert_eq!(some(42u8).xor(none()), some(42));
+    /// assert_eq!(none().xor(some(0u16)), some(0));
+    /// assert!(some(99u32).xor(some(99u32)).is_none());
+    /// ```
+    pub fn xor(self, optb: Self) -> Self {
+        if self.is_none() {
+            return optb;
+        } else if optb.is_none() {
+            return self;
+        }
+        none()
     }
 
     /// Returns the `None` value for type `U` if this value or `other` contains their respective
