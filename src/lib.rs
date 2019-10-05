@@ -59,15 +59,15 @@
 #[cfg(feature = "serde")]
 extern crate serde;
 
-use std::slice::Iter;
+use self::OptionBool::*;
 use std::cmp::Ordering;
 use std::convert::From;
+use std::fmt::{self, Debug, Error};
+use std::hash::{Hash, Hasher};
 use std::iter::Iterator;
 use std::mem;
 use std::ops::{Deref, Index, RangeFull};
-use std::fmt::{self, Debug, Error};
-use std::hash::{Hash, Hasher};
-use self::OptionBool::*;
+use std::slice::Iter;
 
 /// The `OptionBool` type, a space-efficient Option<bool> replacement
 #[derive(Copy, Clone, PartialEq, Eq, Ord, Hash)]
@@ -404,16 +404,20 @@ impl OptionBool {
         F: FnOnce(bool) -> bool,
     {
         match self {
-            SomeTrue => if f(true) {
-                SomeTrue
-            } else {
-                SomeFalse
-            },
-            SomeFalse => if f(false) {
-                SomeTrue
-            } else {
-                SomeFalse
-            },
+            SomeTrue => {
+                if f(true) {
+                    SomeTrue
+                } else {
+                    SomeFalse
+                }
+            }
+            SomeFalse => {
+                if f(false) {
+                    SomeTrue
+                } else {
+                    SomeFalse
+                }
+            }
             None => None,
         }
     }
@@ -595,6 +599,46 @@ impl OptionBool {
             SomeFalse => f(false),
             None => None,
         }
+    }
+
+    /// Returns `None` if the `OptionBool` is `None`, otherwise calls
+    /// `predicate` with the wrapped value and returns:
+    ///
+    /// * `SomeTrue` or `SomeFalse` if the predicate returns `true`
+    /// * `None` if the predicate returns `false`.
+    ///
+    /// This function is similar to `Iterator::filter`. You can imagine
+    /// `OptionBool` being an iterator over one or zero elements. `filter()`
+    /// lets you decide which elements to keep.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    ///# use optional::OptionBool;
+    /// assert!(OptionBool::SomeTrue.filter(|a| !a).is_none());
+    /// assert_eq!(OptionBool::SomeFalse.filter(|_| true),
+    ///            OptionBool::SomeFalse);
+    /// assert!(OptionBool::None.filter(|_| unreachable!()).is_none());
+    /// ```
+    #[inline]
+    pub fn filter<P>(self, predicate: P) -> OptionBool
+    where
+        P: FnOnce(bool) -> bool,
+    {
+        match self {
+            SomeTrue => {
+                if predicate(true) {
+                    return SomeTrue;
+                }
+            }
+            SomeFalse => {
+                if predicate(false) {
+                    return SomeFalse;
+                }
+            }
+            None => {}
+        }
+        None
     }
 
     /// Returns this as Option unless this is `None`, in which case returns
@@ -1021,10 +1065,14 @@ impl Noned for f64 {
 
 impl Noned for char {
     #[inline]
-    fn is_none(&self) -> bool { *self == '\0' }
+    fn is_none(&self) -> bool {
+        *self == '\0'
+    }
 
     #[inline]
-    fn get_none() -> char { '\0' }
+    fn get_none() -> char {
+        '\0'
+    }
 }
 
 ///Equality within Optioned
@@ -1217,7 +1265,6 @@ impl OptOrd for char {
     }
 }
 
-
 /// An `Option<T>`-like structure that takes only as much space as the enclosed
 /// value, at the cost of removing one particular `None` value from the value
 /// domain (see `Noned`)
@@ -1245,11 +1292,7 @@ where
     }
 }
 
-impl<T> Eq for Optioned<T>
-where
-    T: OptEq + Noned + Copy,
-{
-}
+impl<T> Eq for Optioned<T> where T: OptEq + Noned + Copy {}
 
 impl<T> PartialOrd for Optioned<T>
 where
@@ -1693,10 +1736,10 @@ impl<T: Noned + Copy> Optioned<T> {
     #[inline]
     pub fn and<U>(self, other: Optioned<U>) -> Optioned<U>
     where
-        U: Noned + Copy
+        U: Noned + Copy,
     {
         if self.is_some() {
-           other
+            other
         } else {
             none::<U>()
         }
@@ -1725,13 +1768,44 @@ impl<T: Noned + Copy> Optioned<T> {
     /// assert_eq!(none().and_then(failed_function), none());
     /// ```
     #[inline]
-    pub fn and_then<F,U>(self, f: F) -> Optioned<U>
+    pub fn and_then<F, U>(self, f: F) -> Optioned<U>
     where
         F: FnOnce(T) -> Optioned<U>,
-        U: Noned + Copy
+        U: Noned + Copy,
     {
         if self.is_some() {
             f(self.value)
+        } else {
+            none()
+        }
+    }
+
+    /// Returns `None` if the `Optioned` is none, otherwise calls
+    /// `predicate` with the wrapped value and returns:
+    ///
+    /// * `Some(value)` if the predicate returns `true`
+    /// * `None` if the predicate returns `false`.
+    ///
+    /// This function is similar to `Iterator::filter`. You can imagine
+    /// `Optioned` being an iterator over one or zero elements. `filter()`
+    /// lets you decide which elements to keep.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    ///# use optional::{Optioned, some, none};
+    /// assert!(some(42u8).filter(|a| a > 99).is_none());
+    /// assert_eq!(some(42u16).filter(|_| true),
+    ///            some(42));
+    /// assert!(none().filter(|_: u32| unreachable!()).is_none());
+    /// ```
+    #[inline]
+    pub fn filter<P>(self, predicate: P) -> Self
+    where
+        P: FnOnce(T) -> bool,
+    {
+        if self.is_some() && predicate(self.value) {
+            self
         } else {
             none()
         }
@@ -1753,7 +1827,7 @@ impl<T: Noned + Copy> Optioned<T> {
     /// ```
     #[inline]
     pub fn ok_or<E>(self, err: E) -> Result<T, E> {
-        if self.is_some(){
+        if self.is_some() {
             Ok(self.value)
         } else {
             Err(err)
@@ -1776,7 +1850,7 @@ impl<T: Noned + Copy> Optioned<T> {
     /// ```
     #[inline]
     pub fn ok_or_else<E, F: FnOnce() -> E>(self, err: F) -> Result<T, E> {
-        if self.is_some(){
+        if self.is_some() {
             Ok(self.value)
         } else {
             Err(err())
