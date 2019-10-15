@@ -828,6 +828,26 @@ impl OptionBool {
     pub fn take_bool(&mut self) -> OptionBool {
         mem::replace(self, None)
     }
+
+    /// Replaces the actual value in the option by the value given in
+    /// parameter, returning the old value if present, leaving a
+    /// `Some`{`True`, `False`} in its place.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    ///# use optional::OptionBool;
+    /// let mut x = OptionBool::None;
+    /// assert_eq!(OptionBool::None, x.replace(true));
+    /// assert_eq!(OptionBool::SomeTrue, x);
+    /// ```
+    pub fn replace(&mut self, value: bool) -> OptionBool {
+        mem::replace(self, if value {
+            SomeTrue
+        } else {
+            SomeFalse
+        })
+    }
 }
 
 impl Debug for OptionBool {
@@ -1942,6 +1962,22 @@ impl<T: Noned + Copy> Optioned<T> {
     #[inline]
     pub fn iter(&self) -> OptionedIter<T> {
         OptionedIter { o: *self } // make a copy
+    }
+
+    /// Replaces the actual value in the option by the value given in
+    /// parameter, returning the old value if present, leaving a
+    /// `Some`{`True`, `False`} in its place.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    ///# use optional::{some, none};
+    /// let mut x = none();
+    /// assert_eq!(none(), x.replace(1_u32));
+    /// assert_eq!(some(1u32), x);
+    /// ```
+    pub fn replace(&mut self, value: T) -> Self {
+        mem::replace(self, some(value))
     }
 }
 
