@@ -150,9 +150,9 @@ static OB_TRUE_SLICE: [bool; 1] = [true];
 static OB_FALSE_SLICE: [bool; 1] = [false];
 static OB_EMPTY_SLICE: [bool; 0] = [];
 
-static OB_TRUE_SLICE_REF: &'static [bool] = &OB_TRUE_SLICE;
-static OB_FALSE_SLICE_REF: &'static [bool] = &OB_FALSE_SLICE;
-static OB_EMPTY_SLICE_REF: &'static [bool] = &OB_EMPTY_SLICE;
+static OB_TRUE_SLICE_REF: &[bool] = &OB_TRUE_SLICE;
+static OB_FALSE_SLICE_REF: &[bool] = &OB_FALSE_SLICE;
+static OB_EMPTY_SLICE_REF: &[bool] = &OB_EMPTY_SLICE;
 
 #[cfg(feature = "serde")]
 impl<'de> serde::Deserialize<'de> for OptionBool {
@@ -229,8 +229,8 @@ impl OptionBool {
     /// assert!(!OptionBool::None.is_some());
     /// ```
     #[inline]
-    pub fn is_some(&self) -> bool {
-        if let OptionBool::None = *self {
+    pub fn is_some(self) -> bool {
+        if let OptionBool::None = self {
             false
         } else {
             true
@@ -248,7 +248,7 @@ impl OptionBool {
     /// assert!(!OptionBool::None.contains(false));
     /// ```
     #[inline]
-    pub fn contains(&self, b: bool) -> bool {
+    pub fn contains(self, b: bool) -> bool {
 	self == if b { 
             SomeTrue
         } else {
@@ -267,8 +267,8 @@ impl OptionBool {
     /// assert!(OptionBool::None.is_none());
     /// ```
     #[inline]
-    pub fn is_none(&self) -> bool {
-        if let OptionBool::None = *self {
+    pub fn is_none(self) -> bool {
+        if let OptionBool::None = self {
             true
         } else {
             false
@@ -298,8 +298,8 @@ impl OptionBool {
     /// OptionBool::None.expect("FAIL"); // panics with FAIL
     /// ```
     #[inline]
-    pub fn expect(&self, msg: &str) -> bool {
-        match *self {
+    pub fn expect(self, msg: &str) -> bool {
+        match self {
             SomeTrue => true,
             SomeFalse => false,
             None => panic!("{}", msg),
@@ -329,7 +329,7 @@ impl OptionBool {
     /// OptionBool::None.unwrap(); // panics
     /// ```
     #[inline]
-    pub fn unwrap(&self) -> bool {
+    pub fn unwrap(self) -> bool {
         self.expect("unwrap called on None")
     }
 
@@ -345,8 +345,8 @@ impl OptionBool {
     /// assert!(!OptionBool::None.unwrap_or(false));
     /// ```
     #[inline]
-    pub fn unwrap_or(&self, def: bool) -> bool {
-        match *self {
+    pub fn unwrap_or(self, def: bool) -> bool {
+        match self {
             SomeTrue => true,
             SomeFalse => false,
             None => def,
@@ -1140,7 +1140,6 @@ impl Noned for char {
 ///Equality within Optioned
 pub trait OptEq {
     /// Is the other optioned equal to this one?
-    #[inline]
     fn opt_eq(&self, other: &Self) -> bool;
 }
 
@@ -1224,7 +1223,6 @@ impl OptEq for char {
 ///Ordering within Optioned
 pub trait OptOrd {
     /// compare this Optioned with another
-    #[inline]
     fn opt_cmp(&self, other: &Self) -> Ordering;
 }
 
