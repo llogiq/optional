@@ -237,6 +237,25 @@ impl OptionBool {
         }
     }
 
+    /// Returns true if the option contains the given bool.
+    ///
+    /// # Example
+    ///
+    /// ```
+    ///# use optional::OptionBool;
+    /// assert!(OptionBool::SomeTrue.contains(true));
+    /// assert!(!OptionBool::SomeFalse.contains(true));
+    /// assert!(!OptionBool::None.contains(false));
+    /// ```
+    #[inline]
+    pub fn contains(&self, b: bool) -> bool {
+	self == if b { 
+            SomeTrue
+        } else {
+            SomeFalse
+        }
+    }
+
     /// Returns true if the option is a Some value.
     ///
     /// # Examples
@@ -1978,6 +1997,24 @@ impl<T: Noned + Copy> Optioned<T> {
     /// ```
     pub fn replace(&mut self, value: T) -> Self {
         mem::replace(self, some(value))
+    }
+}
+
+impl<T: Noned + Copy + PartialEq> Optioned<T> {
+    /// Returns `true' if this `Optioned` contains the given value,
+    /// `false` otherwise.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    ///# use optional::{some, none};
+    /// assert!(some(42u8).contains(42));
+    /// assert!(!some(1u32).contains(12));
+    /// assert!(!none().contains(0usize));
+    /// ```
+    #[inline]
+    pub fn contains(&self, value: T) -> bool {
+        self.is_some() && self.value == value
     }
 }
 
