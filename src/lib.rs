@@ -166,6 +166,7 @@ impl<'de> serde::Deserialize<'de> for OptionBool {
     /// assert_eq!("true", serde_json::to_string(&SomeTrue).unwrap());
     ///# }
     /// ```
+    #[inline]
     fn deserialize<D>(deserializer: D) -> Result<OptionBool, D::Error>
     where
         D: serde::Deserializer<'de>,
@@ -186,6 +187,7 @@ impl serde::Serialize for OptionBool {
     /// assert_eq!(SomeTrue, serde_json::from_str("true").unwrap());
     ///# }
     /// ```
+    #[inline]
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
@@ -1995,6 +1997,32 @@ impl<T: Noned + Copy> Optioned<T> {
     /// ```
     pub fn replace(&mut self, value: T) -> Self {
         mem::replace(self, some(value))
+    }
+}
+
+impl<T: Noned + Copy + Clone + Default> Optioned<T> {
+    /// Returns the contained value or a default
+    ///
+    /// Consumes the `self` argument then, if it [`is_some`], returns the
+    /// contained value, otherwise if none, returns the default value for
+    /// that type as per the `Default` trait.
+    ///
+    /// [`is_some`]: struct.Optioned.html#method.is_some
+    ///
+    /// # Examples:
+    ///
+    /// ```
+    ///# use optional::{some, none};
+    /// assert_eq!(1u8, some(1).unwrap_or_default());
+    /// assert_eq!(0u32, none().unwrap_or_default());
+    /// ```
+    #[inline]
+    pub fn unwrap_or_default(self) -> T {
+        if self.is_some() {
+            self.value
+        } else {
+            Default::default()
+        }
     }
 }
 
