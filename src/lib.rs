@@ -355,6 +355,21 @@ impl OptionBool {
         }
     }
 
+    /// Returns the contained bool or the default, which is `false`
+    ///
+    /// # Examples
+    ///
+    /// ```
+    ///# use optional::OptionBool;
+    /// assert!(OptionBool::SomeTrue.unwrap_or_default());
+    /// assert!(!OptionBool::SomeFalse.unwrap_or_default());
+    /// assert!(!OptionBool::None.unwrap_or_default());
+    /// ```
+    #[inline]
+    pub fn unwrap_or_default(self) -> bool {
+        self == SomeTrue
+    }
+
     /// Returns the contained bool or a computed default.
     ///
     /// # Examples
