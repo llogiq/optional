@@ -505,6 +505,28 @@ impl OptionBool {
         }
     }
 
+    /// Maps a value to a `U` by applying the function or return the default.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    ///# use optional::OptionBool;
+    /// assert!(OptionBool::SomeFalse.map_or_default(|a| !a));
+    /// assert_eq!("", OptionBool::None.map_or_default(|_| "Something!"));
+    /// ```
+    #[inline]
+    pub fn map_or_default<U, F>(self, f: F) -> U
+    where
+        U: Default,
+        F: FnOnce(bool) -> U,
+    {
+        match self {
+            SomeTrue => f(true),
+            SomeFalse => f(false),
+            None => Default::default(),
+        }
+    }
+
     /// Transforms the `OptionBool` into a `Result<bool, E>`, mapping
     /// `Some`X to `Ok(`X`)` and `None` to `Err(err)`.
     ///
@@ -1732,6 +1754,28 @@ impl<T: Noned + Copy> Optioned<T> {
     {
         if self.is_none() {
             default()
+        } else {
+            f(self.value)
+        }
+    }
+
+    /// Maps the contained value to a `U` by applying the function or return the
+    /// default.
+    ///
+    /// # Examples
+    /// ```
+    ///# use optional::{some, none};
+    /// assert_eq!("1", some(1usize).map_or_default(|b| b.to_string()));
+    /// assert_eq!("", none::<usize>().map_or_default(|b| b.to_string()));
+    /// ```
+    #[inline]
+    pub fn map_or_default<U, F>(self, f: F) -> U
+    where
+        F: FnOnce(T) -> U,
+        U: Default,
+    {
+        if self.is_none() {
+            Default::default()
         } else {
             f(self.value)
         }
