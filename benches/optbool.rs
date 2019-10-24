@@ -14,7 +14,7 @@ fn bench_is_some_opt(bench: &mut bencher::Bencher) {
             .cycle()
             .take(1200)
         {
-            bencher::black_box(o.is_some());
+            bencher::black_box(bencher::black_box(o).is_some());
         }
     }
 
@@ -28,7 +28,7 @@ fn bench_is_some_std(bench: &mut bencher::Bencher) {
             .cycle()
             .take(1200)
         {
-            bencher::black_box(o.is_some());
+            bencher::black_box(bencher::black_box(o).is_some());
         }
     }
 
@@ -49,7 +49,7 @@ fn bench_map_invert_opt_bool(bench: &mut bencher::Bencher) {
             .cycle()
             .take(1200)
         {
-            bencher::black_box(o.map_bool(invert));
+            bencher::black_box(bencher::black_box(o).map_bool(invert));
         }
     }
 
@@ -66,7 +66,7 @@ fn bench_map_invert_opt(bench: &mut bencher::Bencher) {
             .cycle()
             .take(1200)
         {
-            bencher::black_box(o.map(invert));
+            bencher::black_box(bencher::black_box(o).map(invert));
         }
     }
 
@@ -80,7 +80,7 @@ fn bench_map_invert_std(bench: &mut bencher::Bencher) {
             .cycle()
             .take(1200)
         {
-            bencher::black_box(o.map(invert));
+            bencher::black_box(bencher::black_box(o).map(invert));
         }
     }
 
@@ -94,7 +94,7 @@ fn bench_unwrap_opt(bench: &mut bencher::Bencher) {
             .cycle()
             .take(1200)
         {
-            bencher::black_box(o.unwrap());
+            bencher::black_box(bencher::black_box(o).unwrap());
         }
     }
 
@@ -108,7 +108,7 @@ fn bench_unwrap_std(bench: &mut bencher::Bencher) {
             .cycle()
             .take(1200)
         {
-            bencher::black_box(o.unwrap());
+            bencher::black_box(bencher::black_box(o).unwrap());
         }
     }
 
@@ -125,7 +125,7 @@ fn bench_unwrap_or_opt(bench: &mut bencher::Bencher) {
             .cycle()
             .take(1200)
         {
-            bencher::black_box(o.unwrap_or(false));
+            bencher::black_box(bencher::black_box(o).unwrap_or(false));
         }
     }
 
@@ -139,7 +139,7 @@ fn bench_unwrap_or_std(bench: &mut bencher::Bencher) {
             .cycle()
             .take(1200)
         {
-            bencher::black_box(o.unwrap_or(false));
+            bencher::black_box(bencher::black_box(o).unwrap_or(false));
         }
     }
 
@@ -160,7 +160,7 @@ fn bench_unwrap_or_else_opt(bench: &mut bencher::Bencher) {
             .cycle()
             .take(1200)
         {
-            bencher::black_box(o.unwrap_or_else(oracle));
+            bencher::black_box(bencher::black_box(o).unwrap_or_else(oracle));
         }
     }
 
@@ -174,7 +174,7 @@ fn bench_unwrap_or_else_std(bench: &mut bencher::Bencher) {
             .cycle()
             .take(1200)
         {
-            bencher::black_box(o.unwrap_or_else(oracle));
+            bencher::black_box(bencher::black_box(o).unwrap_or_else(oracle));
         }
     }
 
@@ -191,7 +191,7 @@ fn bench_map_or_opt(bench: &mut bencher::Bencher) {
             .cycle()
             .take(1200)
         {
-            bencher::black_box(o.map_or(false, invert));
+            bencher::black_box(bencher::black_box(o).map_or(false, invert));
         }
     }
 
@@ -205,7 +205,7 @@ fn bench_map_or_std(bench: &mut bencher::Bencher) {
             .cycle()
             .take(1200)
         {
-            bencher::black_box(o.map_or(false, invert));
+            bencher::black_box(bencher::black_box(o).map_or(false, invert));
         }
     }
 
@@ -222,7 +222,7 @@ fn bench_map_or_else_opt(bench: &mut bencher::Bencher) {
             .cycle()
             .take(1200)
         {
-            bencher::black_box(o.map_or_else(oracle, invert));
+            bencher::black_box(bencher::black_box(o).map_or_else(oracle, invert));
         }
     }
 
@@ -236,7 +236,7 @@ fn bench_map_or_else_std(bench: &mut bencher::Bencher) {
             .cycle()
             .take(1200)
         {
-            bencher::black_box(o.map_or_else(oracle, invert));
+            bencher::black_box(bencher::black_box(o).map_or_else(oracle, invert));
         }
     }
 
@@ -258,7 +258,7 @@ fn bench_and_opt(bench: &mut bencher::Bencher) {
                 .cycle()
                 .take(33)
             {
-                bencher::black_box(o1.and(*o2));
+                bencher::black_box(bencher::black_box(o1).and(bencher::black_box(*o2)));
             }
         }
     }
@@ -284,7 +284,7 @@ fn bench_and_bool_opt(bench: &mut bencher::Bencher) {
                 .cycle()
                 .take(33)
             {
-                bencher::black_box(o1.and_bool(*o2));
+                bencher::black_box(bencher::black_box(o1).and_bool(bencher::black_box(*o2)));
             }
         }
     }
@@ -304,7 +304,7 @@ fn bench_and_std(bench: &mut bencher::Bencher) {
                 .cycle()
                 .take(33)
             {
-                bencher::black_box(o1.and(*o2));
+                bencher::black_box(bencher::black_box(o1).and(bencher::black_box(*o2)));
             }
         }
     }
@@ -327,7 +327,7 @@ fn bench_or_opt(bench: &mut bencher::Bencher) {
                 .cycle()
                 .take(33)
             {
-                bencher::black_box(o1.or(*o2));
+                bencher::black_box(bencher::black_box(o1).or(bencher::black_box(*o2)));
             }
         }
     }
@@ -353,7 +353,7 @@ fn bench_or_bool_opt(bench: &mut bencher::Bencher) {
                 .cycle()
                 .take(33)
             {
-                bencher::black_box(o1.or_bool(*o2));
+                bencher::black_box(bencher::black_box(o1).or_bool(bencher::black_box(*o2)));
             }
         }
     }
@@ -373,7 +373,7 @@ fn bench_or_std(bench: &mut bencher::Bencher) {
                 .cycle()
                 .take(33)
             {
-                bencher::black_box(o1.or(*o2));
+                bencher::black_box(bencher::black_box(o1).or(bencher::black_box(*o2)));
             }
         }
     }
@@ -399,7 +399,7 @@ fn bench_or_else_opt(bench: &mut bencher::Bencher) {
             .cycle()
             .take(1200)
         {
-            bencher::black_box(o.or_else(create_std));
+            bencher::black_box(bencher::black_box(o).or_else(create_std));
         }
     }
 
@@ -416,7 +416,7 @@ fn bench_or_else_bool_opt(bench: &mut bencher::Bencher) {
             .cycle()
             .take(1200)
         {
-            bencher::black_box(o.or_else_bool(create_opt));
+            bencher::black_box(bencher::black_box(o).or_else_bool(create_opt));
         }
     }
 
@@ -430,7 +430,7 @@ fn bench_or_else_std(bench: &mut bencher::Bencher) {
             .cycle()
             .take(1200)
         {
-            bencher::black_box(o.or_else(create_std));
+            bencher::black_box(bencher::black_box(o).or_else(create_std));
         }
     }
 
@@ -489,23 +489,6 @@ fn bench_iter_std(bench: &mut bencher::Bencher) {
     }
 
     bench.iter(iter_std);
-}
-
-fn bench_as_slice_opt(bench: &mut bencher::Bencher) {
-    fn as_slice_opt() {
-        for o in [
-            OptionBool::SomeTrue,
-            OptionBool::SomeFalse,
-            OptionBool::None,
-        ].iter()
-            .cycle()
-            .take(1200)
-        {
-            bencher::black_box(o);
-        }
-    }
-
-    bench.iter(as_slice_opt);
 }
 
 fn bench_from_opt(bench: &mut bencher::Bencher) {
@@ -570,7 +553,6 @@ benchmark_group!(
     bench_iter_opt,
     bench_as_slice_iter_opt,
     bench_iter_std,
-    bench_as_slice_opt,
     bench_from_opt,
     bench_to_opt
 );
