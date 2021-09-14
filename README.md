@@ -1,7 +1,7 @@
 # Optional
 
 [![Build Status](https://travis-ci.org/llogiq/optional.svg)](https://travis-ci.org/llogiq/optional)
-[![Current Version](http://meritbadge.herokuapp.com/optional)](https://crates.io/crates/optional)
+[![Current Version](https://img.shields.io/crates/v/optional.svg)](https://crates.io/crates/optional)
 [![License: MIT/Apache](https://img.shields.io/crates/l/optional.svg)](#license)
 
 This package aims to offer some `Option<_>`-like values that allow a 
@@ -144,8 +144,8 @@ this crate is based.
 
 Licensed under either of
 
- * Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
- * MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+ * Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or https://www.apache.org/licenses/LICENSE-2.0)
+ * MIT license ([LICENSE-MIT](LICENSE-MIT) or https://opensource.org/licenses/MIT)
 
 at your option.
 

@@ -1,6 +1,6 @@
 // Copyright 2015 Andre Bogus
 // Licensed under the MIT license <LICENSE-MIT or
-// http://opensource.org/licenses/MIT>. This file may not be copied, modified,
+// https://opensource.org/licenses/MIT>. This file may not be copied, modified,
 // or distributed except according to those terms.
 
 //! # Space-efficient optional values
