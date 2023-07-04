@@ -21,7 +21,7 @@ path = "src/lib.rs"
 unstable = []
 
 [dependencies]
-serde = { version = "1.0.163", optional = true }
+serde = { version = "1.0.166", optional = true }
 
 [dev-dependencies]
 bencher = "0.1.5"
