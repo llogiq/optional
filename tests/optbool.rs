@@ -2,7 +2,7 @@
 extern crate optional;
 
 use optional::OptionBool;
-use std::convert::Into;
+use core::convert::Into;
 
 #[test]
 fn test_eq_ne() {
