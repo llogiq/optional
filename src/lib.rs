@@ -17,7 +17,7 @@
 //! The `OptionBool` type is expected to require only 1 byte of storage:
 //!
 //! ```rust
-//! assert!(1 == core::mem::size_of::<optional::OptionBool>());
+//! assert!(1 == std::mem::size_of::<optional::OptionBool>());
 //! ```
 //! However, since this crate was originally authored, [improvements in the
 //! compiler](https://users.rust-lang.org/t/list-of-fundamental-crates/17806/5?u=ryan)
@@ -26,7 +26,7 @@
 //! some bench marks](https://github.com/llogiq/optional/issues/33).
 //!
 //! ```rust
-//! assert!(1 == core::mem::size_of::<Option<bool>>());
+//! assert!(1 == std::mem::size_of::<Option<bool>>());
 //! ```
 //!
 //! ## Any type can be optional
@@ -36,17 +36,17 @@
 //! requires the exact same space as T:
 //!
 //! ```rust
-//! assert!(core::mem::size_of::<optional::Optioned<i64>>() ==
-//!     core::mem::size_of::<i64>());
-//! assert!(core::mem::size_of::<optional::Optioned<f32>>() ==
-//!     core::mem::size_of::<f32>());
-//! assert!(core::mem::size_of::<optional::Optioned<u8>>() ==
-//!     core::mem::size_of::<u8>());
+//! assert!(std::mem::size_of::<optional::Optioned<i64>>() ==
+//!     std::mem::size_of::<i64>());
+//! assert!(std::mem::size_of::<optional::Optioned<f32>>() ==
+//!     std::mem::size_of::<f32>());
+//! assert!(std::mem::size_of::<optional::Optioned<u8>>() ==
+//!     std::mem::size_of::<u8>());
 //! ```
 //!
-//! There are implementations for `u8..64,usize` with `core::u..::MAX`
-//! representing None, also for `i8..64,isize` with `core::i..::MIN`
-//! representing None, and for `f32, f64` with `core::f..::NAN` representing
+//! There are implementations for `u8..64,usize` with `std::u..::MAX`
+//! representing None, also for `i8..64,isize` with `std::i..::MIN`
+//! representing None, and for `f32, f64` with `std::f..::NAN` representing
 //! None.
 //!
 //! Using Optioned for your own types is as simple as implementing `Noned` for
@@ -1497,7 +1497,7 @@ impl<T: Noned + Copy> Optioned<T> {
     ///
     /// ```should_panic
     ///# use ::optional::Optioned;
-    /// Optioned::<f64>::some(core::f64::NAN); // panic!s
+    /// Optioned::<f64>::some(std::f64::NAN); // panic!s
     /// ```
     #[inline]
     pub fn some(t: T) -> Self {
@@ -1511,7 +1511,7 @@ impl<T: Noned + Copy> Optioned<T> {
     ///
     /// ```
     ///# use ::optional::Optioned;
-    /// Optioned::<u16>::none(); // Optioned(core::u16::MAX)
+    /// Optioned::<u16>::none(); // Optioned(std::u16::MAX)
     /// ```
     #[inline]
     pub fn none() -> Self {
@@ -2121,7 +2121,7 @@ impl<T: Noned + Copy + PartialEq> Optioned<T> {
 ///
 /// ```should_panic
 ///# use ::optional::some;
-/// some(core::f64::NAN); // panic!s
+/// some(std::f64::NAN); // panic!s
 /// ```
 pub fn some<T: Noned + Copy>(value: T) -> Optioned<T> {
     Optioned::<T>::some(value)
