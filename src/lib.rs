@@ -56,18 +56,21 @@
 #![deny(missing_docs)]
 #![deny(unsafe_code)]
 
+#![no_std]
+extern crate alloc;
+
 #[cfg(feature = "serde")]
 extern crate serde;
 
 use self::OptionBool::*;
-use std::cmp::Ordering;
-use std::convert::From;
-use std::fmt::{self, Debug, Error};
-use std::hash::{Hash, Hasher};
-use std::iter::Iterator;
-use std::mem;
-use std::ops::{Deref, Index, RangeFull};
-use std::slice::Iter;
+use core::cmp::Ordering;
+use core::convert::From;
+use core::fmt::{self, Debug, Error};
+use core::hash::{Hash, Hasher};
+use core::iter::Iterator;
+use core::mem;
+use core::ops::{Deref, Index, RangeFull};
+use core::slice::Iter;
 
 /// The `OptionBool` type, a space-efficient Option<bool> replacement
 #[derive(Copy, Clone, PartialEq, Eq, Ord, Hash)]
@@ -1023,120 +1026,120 @@ pub trait Noned {
 impl Noned for u8 {
     #[inline]
     fn is_none(&self) -> bool {
-        self == &std::u8::MAX
+        self == &core::u8::MAX
     }
 
     #[inline]
     fn get_none() -> u8 {
-        std::u8::MAX
+        core::u8::MAX
     }
 }
 
 impl Noned for u16 {
     #[inline]
     fn is_none(&self) -> bool {
-        self == &std::u16::MAX
+        self == &core::u16::MAX
     }
 
     #[inline]
     fn get_none() -> u16 {
-        std::u16::MAX
+        core::u16::MAX
     }
 }
 
 impl Noned for u32 {
     #[inline]
     fn is_none(&self) -> bool {
-        self == &std::u32::MAX
+        self == &core::u32::MAX
     }
 
     #[inline]
     fn get_none() -> u32 {
-        std::u32::MAX
+        core::u32::MAX
     }
 }
 
 impl Noned for u64 {
     #[inline]
     fn is_none(&self) -> bool {
-        self == &std::u64::MAX
+        self == &core::u64::MAX
     }
 
     #[inline]
     fn get_none() -> u64 {
-        std::u64::MAX
+        core::u64::MAX
     }
 }
 
 impl Noned for usize {
     #[inline]
     fn is_none(&self) -> bool {
-        self == &std::usize::MAX
+        self == &core::usize::MAX
     }
 
     #[inline]
     fn get_none() -> usize {
-        std::usize::MAX
+        core::usize::MAX
     }
 }
 
 impl Noned for i8 {
     #[inline]
     fn is_none(&self) -> bool {
-        self == &std::i8::MIN
+        self == &core::i8::MIN
     }
 
     #[inline]
     fn get_none() -> i8 {
-        std::i8::MIN
+        core::i8::MIN
     }
 }
 
 impl Noned for i16 {
     #[inline]
     fn is_none(&self) -> bool {
-        self == &std::i16::MIN
+        self == &core::i16::MIN
     }
 
     #[inline]
     fn get_none() -> i16 {
-        std::i16::MIN
+        core::i16::MIN
     }
 }
 
 impl Noned for i32 {
     #[inline]
     fn is_none(&self) -> bool {
-        self == &std::i32::MIN
+        self == &core::i32::MIN
     }
 
     #[inline]
     fn get_none() -> i32 {
-        std::i32::MIN
+        core::i32::MIN
     }
 }
 
 impl Noned for i64 {
     #[inline]
     fn is_none(&self) -> bool {
-        self == &std::i64::MIN
+        self == &core::i64::MIN
     }
 
     #[inline]
     fn get_none() -> i64 {
-        std::i64::MIN
+        core::i64::MIN
     }
 }
 
 impl Noned for isize {
     #[inline]
     fn is_none(&self) -> bool {
-        self == &std::isize::MIN
+        self == &core::isize::MIN
     }
 
     #[inline]
     fn get_none() -> isize {
-        std::isize::MIN
+        core::isize::MIN
     }
 }
 
@@ -1148,7 +1151,7 @@ impl Noned for f32 {
 
     #[inline]
     fn get_none() -> f32 {
-        std::f32::NAN
+        core::f32::NAN
     }
 }
 
@@ -1160,7 +1163,7 @@ impl Noned for f64 {
 
     #[inline]
     fn get_none() -> f64 {
-        std::f64::NAN
+        core::f64::NAN
     }
 }
 
@@ -2025,7 +2028,7 @@ impl<T: Noned + Copy> Optioned<T> {
     /// ```
     #[inline]
     pub fn as_slice(&self) -> &[T] {
-        &std::slice::from_ref(&self.value)[..self.is_some() as usize]
+        &core::slice::from_ref(&self.value)[..self.is_some() as usize]
     }
 
     /// return an iterator over all contained (that is zero or one) values.
